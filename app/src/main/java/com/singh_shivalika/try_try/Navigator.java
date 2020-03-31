@@ -83,9 +83,12 @@ public class Navigator {
 
     ArrayList<NodePoint> coords;
     ArrayList<Path> paths;
+
     double MAX_ANGLE_DEVIATION=5;
     double MAX_DISTANCE_DEVIATION = 10;
     double MIN_DISTANCE_FOR_CHANGE = 7; //4.5*1.414~7
+    long MIN_DISTANCE_FOR_EARLY_NOTIFICATION = 40;
+
     NodePoint currentLocation;
 
     Vibration vibration;
@@ -93,7 +96,7 @@ public class Navigator {
     Context appcontext;
     private int UPDATE_INTERVAL;
 
-    Path currentpath=null;
+    int currentpath_index=0;
 
     Navigator(Context appcontext, int update_interval, String json_data) {
         this.appcontext = appcontext;
@@ -124,7 +127,7 @@ public class Navigator {
             paths.get(i).destination.changeInBearing = paths.get(i+1).bearingAngle-paths.get(i).bearingAngle;
         }
 
-        currentpath = paths.get(0);
+        currentpath_index = 0;
     }
 
     public void setMaxDeviationAngle(double deviationAngle) {
@@ -160,38 +163,85 @@ public class Navigator {
         // TODO : ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     }
 
+    public void wait(int seconds){
+        try {
+            Thread.sleep(seconds);
+        }catch (Exception e){ }
+    }
+
     public String getUpdate(double latitude, double longitude) {
         double compass = this.compass.degree;
-        currentLocation.longitude = longitude;
         currentLocation.latitude = latitude;
+        currentLocation.longitude = longitude;
+        String message = "";
 
-        if(Math.abs(compass - currentpath.bearingAngle) < MAX_ANGLE_DEVIATION){
-
-            if(getDistance(currentpath.destination.latitude,currentpath.destination.longitude,currentLocation.latitude,currentLocation.longitude)<MIN_DISTANCE_FOR_CHANGE) {
-                int i = 0;
-                for(i = 0; i< paths.size();i++)
-                    if(paths.get(i).equals(currentpath))
-                        break;
-                currentpath = paths.get(i+1);
-                return getUpdate(latitude,longitude);
+        //Check whether user came to a destination node
+        if(getDistance(currentLocation.latitude,currentLocation.longitude,paths.get(currentpath_index).destination.latitude,paths.get(currentpath_index).destination.longitude)<MIN_DISTANCE_FOR_CHANGE) {
+            if(currentpath_index==paths.size()-1) {
+                return "Hola, You reached your destination.";
             }
+            currentpath_index++;
+            return getUpdate(latitude,longitude);
+        }
 
-            if(getDistance(currentLocation.latitude,currentLocation.longitude,currentpath.source.latitude,currentpath.source.longitude)
-                    +  getDistance(currentLocation.latitude,currentLocation.longitude,currentpath.destination.latitude,currentpath.destination.longitude)
-                    -  getDistance(currentpath.source.latitude,currentpath.source.longitude,currentpath.destination.latitude,currentpath.destination.longitude)  <  MAX_DISTANCE_DEVIATION)
-                return "Walk straight for another " + (int) getDistance(currentLocation.latitude,currentLocation.longitude,currentpath.destination.latitude,currentpath.destination.longitude) + " m";
+        //Check whether user is on path
+        if(getDistance(currentLocation.latitude,currentLocation.longitude,paths.get(currentpath_index).source.latitude,paths.get(currentpath_index).source.longitude) + getDistance(currentLocation.latitude,currentLocation.longitude,paths.get(currentpath_index).destination.latitude,paths.get(currentpath_index).destination.longitude) - getDistance(paths.get(currentpath_index).source.latitude,paths.get(currentpath_index).source.longitude,paths.get(currentpath_index).destination.latitude,paths.get(currentpath_index).destination.longitude) < MAX_DISTANCE_DEVIATION) {
+
+            //User is on the road, now checking angle
+            if (Math.abs(compass - getBearing(currentLocation.latitude, currentLocation.longitude, paths.get(currentpath_index).destination.latitude, paths.get(currentpath_index).destination.longitude)) < MAX_ANGLE_DEVIATION) {
+
+                // User is at correct angle
+                long distance = (int) (getDistance(currentLocation.latitude, currentLocation.longitude, paths.get(currentpath_index).destination.latitude, paths.get(currentpath_index).destination.longitude));
+                message = "Walk straight by " + distance + " meters.";
+
+                if (distance < MIN_DISTANCE_FOR_EARLY_NOTIFICATION) {
+                    if (currentpath_index != paths.size() - 1) {
+
+                        //Next turn notification
+                        int nextBearing = (int) (paths.get(currentpath_index + 1).bearingAngle - getBearing(currentLocation.latitude, currentLocation.longitude, paths.get(currentpath_index).destination.latitude, paths.get(currentpath_index).destination.longitude));
+                        if(nextBearing>MAX_ANGLE_DEVIATION) {
+                            if (nextBearing > 0)
+                                message += " After that take a right of " + Math.abs(nextBearing) + " degrees";
+                            else if (nextBearing < 0)
+                                message += " After that take a left of " + Math.abs(nextBearing) + " degrees";
+                        }
+                    }
+                }
+
+                return message;
+            } else {
+
+                //User is still on the road but facing wrong direction
+                int dAngle = (int) (getBearing(currentLocation.latitude, currentLocation.longitude, paths.get(currentpath_index).destination.latitude, paths.get(currentpath_index).destination.longitude) - compass);
+                if (dAngle < 0)
+                    message = "Turn left by " + (int) Math.abs(dAngle) + " degrees";
+                else
+                    message = "Turn right by " + (int) Math.abs(dAngle) + " degrees";
+
+                vibration.vibrate(2);
+                return message;
+            }
         }
         else{
-            if(currentpath.bearingAngle-compass<0) {
-                vibration.vibrate(UPDATE_INTERVAL);
-                return "Turn left by " + (int) Math.abs(currentpath.bearingAngle - compass) + " degrees";
+            //User is not on the road....
+
+            //Maybe teleported (:|)  but to correct road
+            //Search for roods in paths...
+            boolean isNewPathFound = false;
+            for(int i = 0; i < paths.size(); i++){
+                Path p = paths.get(i);
+                if(getDistance(currentLocation.latitude,currentLocation.longitude,p.source.latitude,p.source.longitude) + getDistance(currentLocation.latitude,currentLocation.longitude,p.destination.latitude,p.destination.longitude) - getDistance(p.source.latitude,p.source.longitude,p.destination.latitude,p.destination.longitude) < MAX_DISTANCE_DEVIATION) {
+                    currentpath_index = i;
+                    isNewPathFound=true;
+                }
             }
-            else {
-                vibration.vibrate(UPDATE_INTERVAL);
-                return "Turn right by " + (int) Math.abs(currentpath.bearingAngle - compass) + " degrees";
-            }
+            if(isNewPathFound)
+                return getUpdate(currentLocation.latitude,currentLocation.longitude);
+
+                //User is totally off route...
+            else
+                return "Sorry, you are off route, requesting path re-route.";
         }
-        return "OFFROUTE";
     }
 
     public void pause(){

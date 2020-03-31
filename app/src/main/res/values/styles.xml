@@ -8,8 +8,4 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
-    <style name ="cutomMapStyle">
-        <item name="navigationViewLocationLayerStyle">@style/NavigationLocationLayerStyle</item>
-    </style>
-
 </resources>

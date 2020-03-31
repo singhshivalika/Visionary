@@ -34,11 +34,11 @@ public class GiveDirection extends AppCompatActivity {
                     if(!((ThisApplication)getApplication()).isGive_Instruction())break;
                     String t=  navigator.getUpdate(28.663067,77.452757);
                     Log.e("RESPONSE",t);
-                    box.setText(t);
+                    runOnUiThread(()-> { box.setText(t); });
                     MainActivity.voiceClass.speak(t);
                     try {
-                        Thread.sleep(2000);
-                    }catch(InterruptedException e) { }
+                        Thread.sleep(100 * t.length());
+                    } catch (InterruptedException e) { }
                 }
             }
         }).start();
