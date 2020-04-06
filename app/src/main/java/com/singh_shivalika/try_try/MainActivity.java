@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.speech.RecognizerIntent;
 import android.util.Log;
+import android.view.TextureView;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -16,6 +17,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -23,13 +25,18 @@ public class MainActivity extends AppCompatActivity {
 
     private double currentLat,currentLng;
     public static VoiceClass voiceClass = null;
+    ObjectDetector objectDetector;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_main);
+
         voiceClass = new VoiceClass(this);
+        ((ThisApplication)getApplication()).voiceClass = voiceClass;
+        objectDetector = new ObjectDetector(this);
+        ((ThisApplication)getApplication()).setObjectDetector(objectDetector);
+
         selfLocation = new SelfLocation(this);
         Log.e("Current Locaton",""+selfLocation.LATITUDE+" "+selfLocation.LONGITUDE);
         currentLat = 28.663067;
@@ -165,5 +172,9 @@ public class MainActivity extends AppCompatActivity {
             }
             catch (Exception e){ return null;}
         }
+    }
+
+    public void onObjectDetected(List<String> detectedObjects) {
+
     }
 }

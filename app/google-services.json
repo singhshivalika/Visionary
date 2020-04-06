@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "851968698343",
+    "firebase_url": "https://stately-planet-271809.firebaseio.com",
+    "project_id": "stately-planet-271809",
+    "storage_bucket": "stately-planet-271809.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:851968698343:android:03e7e03494cc25c90ebf42",
+        "android_client_info": {
+          "package_name": "com.singh_shivalika.try_try"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "851968698343-6fklm4gqn6uossfpjdp8h8us5n3f7n3e.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAFR6EPV2mvy4V5CzNkp_IyG6Ard1o6zF4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "851968698343-6fklm4gqn6uossfpjdp8h8us5n3f7n3e.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

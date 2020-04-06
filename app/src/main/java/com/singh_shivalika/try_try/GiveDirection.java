@@ -1,27 +1,43 @@
 package com.singh_shivalika.try_try;
 
 import android.content.Intent;
-import android.content.pm.LabeledIntent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MotionEvent;
+import android.view.TextureView;
+import android.view.View;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 
-public class GiveDirection extends AppCompatActivity {
+public class GiveDirection extends AppCompatActivity implements View.OnTouchListener {
 
+    ConstraintLayout tap_area;
     TextView box;
     Navigator navigator;
+    TextureView textureView;
+    CameraClass cameraClass;
+    ObjectDetector objectDetector;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_givedirection);
-        box = findViewById(R.id.box);
 
+        textureView = findViewById(R.id.view_finder);
+        ((ThisApplication)getApplication()).setTextureView(textureView);
+
+        cameraClass = new CameraClass(textureView,this);
+        ((ThisApplication)getApplication()).setCameraClass(cameraClass);
+
+        tap_area = findViewById(R.id.tap_area);
+        box = findViewById(R.id.box);
         Intent i = getIntent();
         startCustomNav(i.getStringExtra("DATAPOINTS"));
+
+        tap_area.setOnTouchListener(this);
     }
 
     private void startCustomNav(String datapoints) {
@@ -31,6 +47,7 @@ public class GiveDirection extends AppCompatActivity {
             @Override
             public void run() {
                 while(true){
+                    if(((ThisApplication)getApplication()).mode != 0) continue;
                     if(!((ThisApplication)getApplication()).isGive_Instruction())break;
                     String t=  navigator.getUpdate(28.663067,77.452757);
                     Log.e("RESPONSE",t);
@@ -58,4 +75,20 @@ public class GiveDirection extends AppCompatActivity {
             navigator.pause();
     }
 
+    @Override
+    public boolean onTouch(View view, MotionEvent event) {
+        if(event.getAction()==MotionEvent.ACTION_DOWN){
+            ((ThisApplication)getApplication()).mode = 1;
+            ((ThisApplication)getApplication()).cameraClass.startCamera();
+            ((ThisApplication)getApplication()).objectDetector.cont = true;
+            ((ThisApplication)getApplication()).objectDetector.startDetecting();
+        }
+
+        else if(event.getAction()==MotionEvent.ACTION_UP){
+            ((ThisApplication)getApplication()).mode = 0;
+            ((ThisApplication)getApplication()).objectDetector.cont = false;
+            ((ThisApplication)getApplication()).cameraClass.stopCamera();
+        }
+        return true;
+    }
 }
