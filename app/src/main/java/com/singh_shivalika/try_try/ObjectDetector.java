@@ -3,6 +3,7 @@ package com.singh_shivalika.try_try;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
+import android.util.Log;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -33,28 +34,14 @@ public class ObjectDetector implements OnSuccessListener<List<FirebaseVisionImag
 
     ObjectDetector(Context appcontext){
         this.appcontext = appcontext;
-        FirebaseVisionObjectDetectorOptions options = new FirebaseVisionObjectDetectorOptions.Builder().setDetectorMode(FirebaseVisionObjectDetectorOptions.STREAM_MODE).enableClassification().enableMultipleObjects().build();
+        FirebaseVisionObjectDetectorOptions options = new FirebaseVisionObjectDetectorOptions.Builder().setDetectorMode(FirebaseVisionObjectDetectorOptions.SINGLE_IMAGE_MODE).enableClassification().build();
         FirebaseApp.initializeApp(appcontext);
         objectDetector = FirebaseVision.getInstance().getOnDeviceObjectDetector(options);
         labeler = FirebaseVision.getInstance().getOnDeviceImageLabeler();
     }
 
-    public void startDetecting(){
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                while (true){
-                    if(!cont)break;
-                    detect();
-                    try {
-                        Thread.sleep(100);
-                    }catch (Exception e){ }
-                }
-            }
-        }).start();
-    }
-
     public void detect() {
+        detectedObjects.clear();
         Bitmap bmp =  ((ThisApplication) ((MainActivity) appcontext).getApplication()).textureView.getBitmap();
         if(bmp==null)return;
 
@@ -65,10 +52,7 @@ public class ObjectDetector implements OnSuccessListener<List<FirebaseVisionImag
                 Rect extraRect = new Rect( Math.max(0,o.getBoundingBox().left-MARGIN),Math.max(0,o.getBoundingBox().top-MARGIN),Math.min(o.getBoundingBox().right+MARGIN,bmp.getWidth()),Math.min(o.getBoundingBox().bottom+MARGIN,bmp.getHeight()));
                 labeler.processImage(FirebaseVisionImage.fromBitmap(Bitmap.createBitmap( bmp,extraRect.left,extraRect.top,extraRect.width(),extraRect.height()))).addOnSuccessListener(this);
             }
-            ((ThisApplication) ((AppCompatActivity)appcontext).getApplication()).mode = 1;
             say();
-            detectedObjects.clear();
-            ((ThisApplication) ((AppCompatActivity)appcontext).getApplication()).mode = 0;
         });
     }
 
@@ -79,18 +63,27 @@ public class ObjectDetector implements OnSuccessListener<List<FirebaseVisionImag
         double confidence = 0;
         String product = "";
         for(FirebaseVisionImageLabel l : firebaseVisionImageLabels){
-            if(l.getConfidence()>confidence)
-                product = l.getText();
+            Log.e("LOL",l.getText()+" "+l.getConfidence());
+            if(l.getConfidence()>0.80) {
+                if (!detectedObjects.contains(l.getText()))
+                    detectedObjects.add(l.getText());
+            }
         }
-        detectedObjects.add(product);
     }
 
     private void say() {
+        if(detectedObjects.size()==0){detect(); return;}
         StringBuilder sb = new StringBuilder();
         for(String str: detectedObjects)
             sb.append(str+" ");
 
-        voiceClass.speak(sb.toString() + "detected");
+        voiceClass.speak(sb.toString());
+        try {
+            Thread.sleep(100 * sb.toString().length());
+        }catch (Exception e){ }
+
+        if(((ThisApplication)((AppCompatActivity)appcontext).getApplication()).mode == 1)
+            detect();
     }
 
     public void setVoiceClass(VoiceClass voiceClass) {

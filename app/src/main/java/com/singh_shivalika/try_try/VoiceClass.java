@@ -17,6 +17,7 @@ public class VoiceClass {
     static Context current_context;
 
     static TextToSpeech tts;
+    boolean initialized = false;
 
     VoiceClass(Context context){
         this.current_context = context;
@@ -33,12 +34,13 @@ public class VoiceClass {
                         Log.i("TTS", "Language Supported.");
                     }
                     Log.i("TTS", "Initialization success.");
-                    ((MainActivity)current_context).askUser();
+                    initialized = true;
                 } else {
                     Toast.makeText(current_context.getApplicationContext(), "TTS Initialization failed!", Toast.LENGTH_SHORT).show();
                 }
             }
         });
+        while(!initialized);
     }
 
     public static void promptSpeechInput() {

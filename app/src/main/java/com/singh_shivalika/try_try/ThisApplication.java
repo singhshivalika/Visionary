@@ -6,14 +6,14 @@ import android.view.TextureView;
 public class ThisApplication extends Application {
 
     private boolean give_Instruction = false;
-    public int mode = 0;
-    // 0 say about navigation.
-    // 1 say about objects around.
-
     public VoiceClass voiceClass;
     public ObjectDetector objectDetector;
     TextureView textureView;
     public CameraClass cameraClass;
+
+    public int mode = 0;
+    //0 navigation
+    //1 object
 
     public void setTextureView(TextureView textureView){
         this.textureView = textureView;

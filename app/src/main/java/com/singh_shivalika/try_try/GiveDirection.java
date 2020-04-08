@@ -19,7 +19,6 @@ public class GiveDirection extends AppCompatActivity implements View.OnTouchList
     Navigator navigator;
     TextureView textureView;
     CameraClass cameraClass;
-    ObjectDetector objectDetector;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -47,14 +46,14 @@ public class GiveDirection extends AppCompatActivity implements View.OnTouchList
             @Override
             public void run() {
                 while(true){
-                    if(((ThisApplication)getApplication()).mode != 0) continue;
                     if(!((ThisApplication)getApplication()).isGive_Instruction())break;
+                    if(((ThisApplication)getApplication()).mode != 0)continue;
                     String t=  navigator.getUpdate(28.663067,77.452757);
                     Log.e("RESPONSE",t);
                     runOnUiThread(()-> { box.setText(t); });
                     MainActivity.voiceClass.speak(t);
                     try {
-                        Thread.sleep(100 * t.length());
+                        Thread.sleep(200 * t.length());
                     } catch (InterruptedException e) { }
                 }
             }
@@ -78,16 +77,16 @@ public class GiveDirection extends AppCompatActivity implements View.OnTouchList
     @Override
     public boolean onTouch(View view, MotionEvent event) {
         if(event.getAction()==MotionEvent.ACTION_DOWN){
-            ((ThisApplication)getApplication()).mode = 1;
             ((ThisApplication)getApplication()).cameraClass.startCamera();
-            ((ThisApplication)getApplication()).objectDetector.cont = true;
-            ((ThisApplication)getApplication()).objectDetector.startDetecting();
+                    ((ThisApplication)getApplication()).objectDetector.detect();
+                    ((ThisApplication)getApplication()).objectDetector.cont = true;
+                    ((ThisApplication)getApplication()).mode = 1;
         }
 
         else if(event.getAction()==MotionEvent.ACTION_UP){
-            ((ThisApplication)getApplication()).mode = 0;
             ((ThisApplication)getApplication()).objectDetector.cont = false;
             ((ThisApplication)getApplication()).cameraClass.stopCamera();
+            ((ThisApplication)getApplication()).mode = 0;
         }
         return true;
     }

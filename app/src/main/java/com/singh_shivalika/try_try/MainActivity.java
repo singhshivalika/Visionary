@@ -31,19 +31,24 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        new Thread(()->{ init(); }).start();
+    }
 
+    private void init() {
         voiceClass = new VoiceClass(this);
         ((ThisApplication)getApplication()).voiceClass = voiceClass;
         objectDetector = new ObjectDetector(this);
         ((ThisApplication)getApplication()).setObjectDetector(objectDetector);
 
-        selfLocation = new SelfLocation(this);
-        Log.e("Current Locaton",""+selfLocation.LATITUDE+" "+selfLocation.LONGITUDE);
-        currentLat = 28.663067;
-        currentLng  = 77.452757;
-        /*currentLat = selfLocation.LATITUDE;
-        currentLng = selfLocation.LONGITUDE;*/
-        askUser();
+        runOnUiThread(()->{
+            selfLocation = new SelfLocation(this);
+            Log.e("Current Locaton",""+selfLocation.LATITUDE+" "+selfLocation.LONGITUDE);
+            currentLat = 28.663067;
+            currentLng  = 77.452757;
+            /*currentLat = selfLocation.LATITUDE;
+            currentLng = selfLocation.LONGITUDE;*/
+            askUser();
+        });
     }
 
     public void askUser(){

@@ -7,6 +7,8 @@ import java.util.ArrayList;
 
 public class Navigator {
 
+    public boolean isPaused = false;
+
     public void stringToArrayList(ArrayList<NodePoint> store_variable, String json_data){
 
         String[] str = json_data.split("]");
@@ -170,6 +172,7 @@ public class Navigator {
     }
 
     public String getUpdate(double latitude, double longitude) {
+        if(isPaused)return "PAUSED";
         double compass = this.compass.degree;
         currentLocation.latitude = latitude;
         currentLocation.longitude = longitude;
