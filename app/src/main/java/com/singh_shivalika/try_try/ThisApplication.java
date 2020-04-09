@@ -3,6 +3,8 @@ package com.singh_shivalika.try_try;
 import android.app.Application;
 import android.view.TextureView;
 
+import androidx.camera.core.ImageAnalysis;
+import androidx.camera.core.impl.ImageAnalysisConfig;
 import androidx.camera.view.PreviewView;
 
 public class ThisApplication extends Application {
@@ -10,15 +12,15 @@ public class ThisApplication extends Application {
     private boolean give_Instruction = false;
     public VoiceClass voiceClass;
     public ObjectDetector objectDetector;
-    PreviewView previewView;
+    ImageAnalysis imageAnalysis;
     public CameraClass cameraClass;
 
     public int mode = 0;
     //0 navigation
     //1 object
 
-    public void setPreviewView(PreviewView textureView){
-        this.previewView = previewView;
+    public void setImageAnalysis(ImageAnalysis imageAnalysis){
+        this.imageAnalysis = imageAnalysis;
     }
 
     public void setObjectDetector(ObjectDetector objectDetector){

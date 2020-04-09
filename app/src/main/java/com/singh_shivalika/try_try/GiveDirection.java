@@ -27,7 +27,6 @@ public class GiveDirection extends AppCompatActivity implements View.OnTouchList
         setContentView(R.layout.activity_givedirection);
 
         previewView = findViewById(R.id.view_finder);
-        ((ThisApplication)getApplication()).setPreviewView(previewView);
 
         cameraClass = new CameraClass(previewView,this);
         ((ThisApplication)getApplication()).setCameraClass(cameraClass);
@@ -79,7 +78,7 @@ public class GiveDirection extends AppCompatActivity implements View.OnTouchList
     public boolean onTouch(View view, MotionEvent event) {
         if(event.getAction()==MotionEvent.ACTION_DOWN){
             ((ThisApplication)getApplication()).cameraClass.startCamera();
-                    ((ThisApplication)getApplication()).objectDetector.detect();
+                    ((ThisApplication)getApplication()).objectDetector.startDetecting();
                     ((ThisApplication)getApplication()).objectDetector.cont = true;
                     ((ThisApplication)getApplication()).mode = 1;
         }

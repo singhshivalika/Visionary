@@ -4,6 +4,8 @@ import android.annotation.SuppressLint;
 import android.graphics.Camera;
 import android.graphics.Matrix;
 import android.hardware.camera2.CameraManager;
+import android.media.Image;
+import android.os.AsyncTask;
 import android.util.Log;
 import android.util.Size;
 import android.view.Surface;
@@ -18,15 +20,22 @@ import androidx.camera.core.CameraControl;
 import androidx.camera.core.CameraSelector;
 import androidx.camera.core.CameraX;
 import androidx.camera.core.CameraXConfig;
+import androidx.camera.core.ImageAnalysis;
 import androidx.camera.core.ImageCapture;
+import androidx.camera.core.ImageProxy;
 import androidx.camera.core.Preview;
 import androidx.camera.core.SurfaceRequest;
+import androidx.camera.core.impl.ImageAnalysisConfig;
 import androidx.camera.core.impl.LensFacingConverter;
 import androidx.camera.core.impl.PreviewConfig;
+import androidx.camera.core.impl.UseCaseConfig;
+import androidx.camera.core.impl.UseCaseConfig.Builder;
 import androidx.camera.view.PreviewView;
 import androidx.lifecycle.LifecycleOwner;
 
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class CameraClass {
 
@@ -46,12 +55,19 @@ public class CameraClass {
         Preview preview = new Preview.Builder().setTargetResolution(new Size(previewView.getWidth(),previewView.getHeight())).build();
         preview.setSurfaceProvider(previewView.getPreviewSurfaceProvider());
 
+        ImageAnalysis imageAnalysis = new ImageAnalysis.Builder()
+                .setTargetResolution(new Size(1280, 720))
+                .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                .build();
 
-        CameraX.
+        ((ThisApplication)currentActivity.getApplication()).imageAnalysis = imageAnalysis;
 
+        /*try {
+            Log.e("CAM", String.valueOf(CameraX.getCameraFactory().getAvailableCameraIds().size()));
+        }catch (Exception e){ }*/
 
-
-        CameraX.bindToLifecycle((LifecycleOwner)currentActivity, CameraSelector.LENS_FACING_BACK ,preview);
+        CameraSelector selector = CameraSelector.DEFAULT_BACK_CAMERA;
+        CameraX.bindToLifecycle((LifecycleOwner)currentActivity, selector, imageAnalysis, preview);
     }
 
     @SuppressLint("RestrictedApi")

@@ -1,11 +1,18 @@
 package com.singh_shivalika.try_try;
 
+import android.annotation.SuppressLint;
+import android.bluetooth.BluetoothClass;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
+import android.media.Image;
+import android.os.AsyncTask;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.camera.core.ImageAnalysis;
+import androidx.camera.core.ImageProxy;
 
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.FirebaseApp;
@@ -19,6 +26,8 @@ import com.google.firebase.ml.vision.objects.FirebaseVisionObjectDetectorOptions
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 
 public class ObjectDetector implements OnSuccessListener<List<FirebaseVisionImageLabel>> {
 
@@ -40,18 +49,23 @@ public class ObjectDetector implements OnSuccessListener<List<FirebaseVisionImag
         labeler = FirebaseVision.getInstance().getOnDeviceImageLabeler();
     }
 
-    public void detect() {
+    public void startDetecting(){
+        ImageAnalysis imageAnalysis = ((ThisApplication)((AppCompatActivity)appcontext).getApplication()).imageAnalysis;
+        imageAnalysis.setAnalyzer(AsyncTask.THREAD_POOL_EXECUTOR, image -> detect(image));
+    }
+
+    @SuppressLint("UnsafeExperimentalUsageError")
+    public void detect(ImageProxy imageProxy) {
         detectedObjects.clear();
-
-        Bitmap bmp =  null;//((ThisApplication) ((MainActivity) appcontext).getApplication()).previewView.
-        if(bmp==null)return;
-
-        FirebaseVisionImage image = FirebaseVisionImage.fromBitmap(bmp);
+        if (imageProxy == null || imageProxy.getImage() == null) return;
+        Image mediaImage = imageProxy.getImage();
+        FirebaseVisionImage image = FirebaseVisionImage.fromMediaImage(mediaImage,0);
+        imageProxy.close();
         objectDetector.processImage(image).addOnSuccessListener(detectedObjects -> {
 
             for(FirebaseVisionObject o : detectedObjects){
-                Rect extraRect = new Rect( Math.max(0,o.getBoundingBox().left-MARGIN),Math.max(0,o.getBoundingBox().top-MARGIN),Math.min(o.getBoundingBox().right+MARGIN,bmp.getWidth()),Math.min(o.getBoundingBox().bottom+MARGIN,bmp.getHeight()));
-                labeler.processImage(FirebaseVisionImage.fromBitmap(Bitmap.createBitmap( bmp,extraRect.left,extraRect.top,extraRect.width(),extraRect.height()))).addOnSuccessListener(this);
+                Rect extraRect = new Rect( Math.max(0,o.getBoundingBox().left-MARGIN),Math.max(0,o.getBoundingBox().top-MARGIN),Math.min(o.getBoundingBox().right+MARGIN,image.getBitmap().getWidth()),Math.min(o.getBoundingBox().bottom+MARGIN,image.getBitmap().getHeight()));
+                labeler.processImage(FirebaseVisionImage.fromBitmap(Bitmap.createBitmap( image.getBitmap() ,extraRect.left,extraRect.top,extraRect.width(),extraRect.height()))).addOnSuccessListener(this);
             }
             say();
         });
@@ -73,7 +87,7 @@ public class ObjectDetector implements OnSuccessListener<List<FirebaseVisionImag
     }
 
     private void say() {
-        if(detectedObjects.size()==0){detect(); return;}
+        if(detectedObjects.size()==0){startDetecting(); return;}
         StringBuilder sb = new StringBuilder();
         for(String str: detectedObjects)
             sb.append(str+" ");
@@ -84,7 +98,7 @@ public class ObjectDetector implements OnSuccessListener<List<FirebaseVisionImag
         }catch (Exception e){ }
 
         if(((ThisApplication)((AppCompatActivity)appcontext).getApplication()).mode == 1)
-            detect();
+            startDetecting();
     }
 
     public void setVoiceClass(VoiceClass voiceClass) {
