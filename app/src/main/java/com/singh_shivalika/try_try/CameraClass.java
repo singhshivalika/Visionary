@@ -62,9 +62,9 @@ public class CameraClass {
 
         ((ThisApplication)currentActivity.getApplication()).imageAnalysis = imageAnalysis;
 
-        /*try {
-            Log.e("CAM", String.valueOf(CameraX.getCameraFactory().getAvailableCameraIds().size()));
-        }catch (Exception e){ }*/
+        try {
+
+        }catch (Exception e){ }
 
         CameraSelector selector = CameraSelector.DEFAULT_BACK_CAMERA;
         CameraX.bindToLifecycle((LifecycleOwner)currentActivity, selector, imageAnalysis, preview);
