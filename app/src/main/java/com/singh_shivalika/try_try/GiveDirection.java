@@ -10,6 +10,7 @@ import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.camera.view.PreviewView;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
 public class GiveDirection extends AppCompatActivity implements View.OnTouchListener {
@@ -17,7 +18,7 @@ public class GiveDirection extends AppCompatActivity implements View.OnTouchList
     ConstraintLayout tap_area;
     TextView box;
     Navigator navigator;
-    TextureView textureView;
+    PreviewView previewView;
     CameraClass cameraClass;
 
     @Override
@@ -25,10 +26,10 @@ public class GiveDirection extends AppCompatActivity implements View.OnTouchList
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_givedirection);
 
-        textureView = findViewById(R.id.view_finder);
-        ((ThisApplication)getApplication()).setTextureView(textureView);
+        previewView = findViewById(R.id.view_finder);
+        ((ThisApplication)getApplication()).setPreviewView(previewView);
 
-        cameraClass = new CameraClass(textureView,this);
+        cameraClass = new CameraClass(previewView,this);
         ((ThisApplication)getApplication()).setCameraClass(cameraClass);
 
         tap_area = findViewById(R.id.tap_area);
@@ -53,7 +54,7 @@ public class GiveDirection extends AppCompatActivity implements View.OnTouchList
                     runOnUiThread(()-> { box.setText(t); });
                     MainActivity.voiceClass.speak(t);
                     try {
-                        Thread.sleep(200 * t.length());
+                        Thread.sleep(100 * t.length());
                     } catch (InterruptedException e) { }
                 }
             }

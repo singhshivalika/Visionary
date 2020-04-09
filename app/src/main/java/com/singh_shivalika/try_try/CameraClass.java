@@ -1,64 +1,74 @@
 package com.singh_shivalika.try_try;
 
+import android.annotation.SuppressLint;
+import android.graphics.Camera;
 import android.graphics.Matrix;
+import android.hardware.camera2.CameraManager;
+import android.util.Log;
 import android.util.Size;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.ViewGroup;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.camera.camera2.Camera2Config;
+import androidx.camera.camera2.internal.Camera2CameraFactory;
+import androidx.camera.core.CameraControl;
+import androidx.camera.core.CameraSelector;
 import androidx.camera.core.CameraX;
+import androidx.camera.core.CameraXConfig;
 import androidx.camera.core.ImageCapture;
-import androidx.camera.core.ImageCaptureConfig;
 import androidx.camera.core.Preview;
-import androidx.camera.core.PreviewConfig;
+import androidx.camera.core.SurfaceRequest;
+import androidx.camera.core.impl.LensFacingConverter;
+import androidx.camera.core.impl.PreviewConfig;
+import androidx.camera.view.PreviewView;
 import androidx.lifecycle.LifecycleOwner;
+
+import java.util.concurrent.Executor;
 
 public class CameraClass {
 
-    TextureView textureView;
+    PreviewView previewView;
     AppCompatActivity currentActivity;
 
-    CameraClass(TextureView textureView, AppCompatActivity currentActivity){
+    CameraClass(PreviewView previewView, AppCompatActivity currentActivity){
         this.currentActivity = currentActivity;
-        this.textureView = textureView;
+        this.previewView = previewView;
     }
 
+    @SuppressLint("RestrictedApi")
     public void startCamera() {
+        CameraXConfig config = CameraXConfig.Builder.fromConfig(Camera2Config.defaultConfig()).build();
+        CameraX.initialize(currentActivity,config);
         stopCamera();
-        Preview preview = new Preview(new PreviewConfig.Builder().setTargetResolution(new Size(textureView.getWidth(),textureView.getHeight())).build());
+        Preview preview = new Preview.Builder().setTargetResolution(new Size(previewView.getWidth(),previewView.getHeight())).build();
+        preview.setSurfaceProvider(previewView.getPreviewSurfaceProvider());
 
-        preview.setOnPreviewOutputUpdateListener(output -> {
 
-            ViewGroup parent = (ViewGroup) textureView.getParent();
-            parent.removeView(textureView);
-            parent.addView(textureView, 0);
+        CameraX.
 
-            textureView.setSurfaceTexture(output.getSurfaceTexture());
-            updateTransform();
-        });
 
-        ImageCaptureConfig imageCaptureConfig = new ImageCaptureConfig.Builder().setCaptureMode(ImageCapture.CaptureMode.MIN_LATENCY)
-                .setTargetRotation(currentActivity.getWindowManager().getDefaultDisplay().getRotation()).build();
-        final ImageCapture imgCap = new ImageCapture(imageCaptureConfig);
 
-        CameraX.bindToLifecycle((LifecycleOwner)currentActivity, preview, imgCap);
+        CameraX.bindToLifecycle((LifecycleOwner)currentActivity, CameraSelector.LENS_FACING_BACK ,preview);
     }
 
+    @SuppressLint("RestrictedApi")
     public void stopCamera(){
         CameraX.unbindAll();
     }
 
     private void updateTransform(){
         Matrix mx = new Matrix();
-        float w = textureView.getMeasuredWidth();
-        float h = textureView.getMeasuredHeight();
+        float w = previewView.getMeasuredWidth();
+        float h = previewView.getMeasuredHeight();
 
         float cX = w / 2f;
         float cY = h / 2f;
 
         int rotationDgr;
-        int rotation = (int)textureView.getRotation();
+        int rotation = (int)previewView.getRotation();
 
         switch(rotation){
             case Surface.ROTATION_0:
@@ -77,7 +87,7 @@ public class CameraClass {
                 return;
         }
         mx.postRotate((float)rotationDgr, cX, cY);
-        textureView.setTransform(mx);
+        //previewView.setTr
     }
 
 

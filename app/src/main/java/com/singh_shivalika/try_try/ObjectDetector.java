@@ -34,7 +34,7 @@ public class ObjectDetector implements OnSuccessListener<List<FirebaseVisionImag
 
     ObjectDetector(Context appcontext){
         this.appcontext = appcontext;
-        FirebaseVisionObjectDetectorOptions options = new FirebaseVisionObjectDetectorOptions.Builder().setDetectorMode(FirebaseVisionObjectDetectorOptions.SINGLE_IMAGE_MODE).enableClassification().build();
+        FirebaseVisionObjectDetectorOptions options = new FirebaseVisionObjectDetectorOptions.Builder().setDetectorMode(FirebaseVisionObjectDetectorOptions.STREAM_MODE).enableClassification().build();
         FirebaseApp.initializeApp(appcontext);
         objectDetector = FirebaseVision.getInstance().getOnDeviceObjectDetector(options);
         labeler = FirebaseVision.getInstance().getOnDeviceImageLabeler();
@@ -42,7 +42,8 @@ public class ObjectDetector implements OnSuccessListener<List<FirebaseVisionImag
 
     public void detect() {
         detectedObjects.clear();
-        Bitmap bmp =  ((ThisApplication) ((MainActivity) appcontext).getApplication()).textureView.getBitmap();
+
+        Bitmap bmp =  null;//((ThisApplication) ((MainActivity) appcontext).getApplication()).previewView.
         if(bmp==null)return;
 
         FirebaseVisionImage image = FirebaseVisionImage.fromBitmap(bmp);
