@@ -16,6 +16,7 @@ import androidx.camera.core.ImageProxy;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.ar.core.exceptions.NotYetAvailableException;
 import com.google.ar.sceneform.ux.ArFragment;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.ml.vision.FirebaseVision;
@@ -52,21 +53,17 @@ public class ObjectDetector implements OnSuccessListener<List<FirebaseVisionImag
     }
 
     public void startDetecting(){
-        ImageAnalysis imageAnalysis = ((ThisApplication)((AppCompatActivity)appcontext).getApplication()).imageAnalysis;
-        imageAnalysis.setAnalyzer(AsyncTask.THREAD_POOL_EXECUTOR, image -> detect(image));
-
         ArFragment arfr = ((ThisApplication) ((AppCompatActivity) appcontext).getApplication()).arFragment;
-
         Log.e("LOL",arfr.getArSceneView().getArFrame().toString());
+        try {
+            detect(arfr.getArSceneView().getArFrame().acquireCameraImage());
+        }catch (NotYetAvailableException e){ Log.e("NOT_AVAI","Not available, initiating"); startDetecting(); }
     }
 
     @SuppressLint("UnsafeExperimentalUsageError")
-    public void detect(ImageProxy imageProxy) {
+    public void detect(Image img) {
         detectedObjects.clear();
-        if (imageProxy == null || imageProxy.getImage() == null) return;
-        Image mediaImage = imageProxy.getImage();
-        FirebaseVisionImage image = FirebaseVisionImage.fromMediaImage(mediaImage,0);
-        imageProxy.close();
+        FirebaseVisionImage image = FirebaseVisionImage.fromMediaImage(img,0);
         objectDetector.processImage(image).addOnSuccessListener(detectedObjects -> {
 
             for(FirebaseVisionObject o : detectedObjects){

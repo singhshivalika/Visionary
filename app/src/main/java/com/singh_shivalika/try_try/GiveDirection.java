@@ -33,8 +33,8 @@ public class GiveDirection extends AppCompatActivity implements View.OnTouchList
 
         previewView = findViewById(R.id.view_finder);
 
-        cameraClass = new CameraClass(previewView,this);
-        ((ThisApplication)getApplication()).setCameraClass(cameraClass);
+        //cameraClass = new CameraClass(previewView,this);
+        //((ThisApplication)getApplication()).setCameraClass(cameraClass);
         ((ThisApplication)getApplication()).arFragment = arFragment;
 
         tap_area = findViewById(R.id.tap_area);
@@ -83,15 +83,15 @@ public class GiveDirection extends AppCompatActivity implements View.OnTouchList
     @Override
     public boolean onTouch(View view, MotionEvent event) {
         if(event.getAction()==MotionEvent.ACTION_DOWN){
-            ((ThisApplication)getApplication()).cameraClass.startCamera();
+            /*((ThisApplication)getApplication()).cameraClass.startCamera();
                     ((ThisApplication)getApplication()).objectDetector.startDetecting();
-                    ((ThisApplication)getApplication()).objectDetector.cont = true;
+                    ((ThisApplication)getApplication()).objectDetector.cont = true;*/
                     ((ThisApplication)getApplication()).mode = 1;
         }
 
         else if(event.getAction()==MotionEvent.ACTION_UP){
-            ((ThisApplication)getApplication()).objectDetector.cont = false;
-            ((ThisApplication)getApplication()).cameraClass.stopCamera();
+            /*((ThisApplication)getApplication()).objectDetector.cont = false;
+            ((ThisApplication)getApplication()).cameraClass.stopCamera();*/
             ((ThisApplication)getApplication()).mode = 0;
         }
         return true;
