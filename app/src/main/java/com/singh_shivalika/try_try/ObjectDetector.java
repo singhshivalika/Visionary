@@ -17,6 +17,8 @@ import androidx.fragment.app.Fragment;
 
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.ar.core.exceptions.NotYetAvailableException;
+import com.google.ar.sceneform.FrameTime;
+import com.google.ar.sceneform.Scene;
 import com.google.ar.sceneform.ux.ArFragment;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.ml.vision.FirebaseVision;
@@ -30,7 +32,7 @@ import com.google.firebase.ml.vision.objects.FirebaseVisionObjectDetectorOptions
 import java.util.ArrayList;
 import java.util.List;
 
-public class ObjectDetector implements OnSuccessListener<List<FirebaseVisionImageLabel>> {
+public class ObjectDetector implements OnSuccessListener<List<FirebaseVisionImageLabel>>, Scene.OnUpdateListener {
 
     private final static int MARGIN = 10;
     public boolean cont = false;
@@ -53,6 +55,7 @@ public class ObjectDetector implements OnSuccessListener<List<FirebaseVisionImag
     public void startDetecting(){
         ArFragment arfr = ((ThisApplication) ((AppCompatActivity) appcontext).getApplication()).arFragment;
         try {
+            arfr.getArSceneView().getScene().addOnUpdateListener(this);
             detect(arfr.getArSceneView().getArFrame().acquireCameraImage());
         }catch (Exception e){
             Log.e("NOT_AVAI","Not available, initiating"+e.toString());
@@ -60,7 +63,6 @@ public class ObjectDetector implements OnSuccessListener<List<FirebaseVisionImag
                 startDetecting(); }
     }
 
-    @SuppressLint("UnsafeExperimentalUsageError")
     public void detect(Image img) {
         detectedObjects.clear();
         FirebaseVisionImage image = FirebaseVisionImage.fromMediaImage(img,0);
@@ -107,5 +109,10 @@ public class ObjectDetector implements OnSuccessListener<List<FirebaseVisionImag
 
     public void setVoiceClass(VoiceClass voiceClass) {
         this.voiceClass = voiceClass;
+    }
+
+    @Override
+    public void onUpdate(FrameTime frameTime) {
+
     }
 }
