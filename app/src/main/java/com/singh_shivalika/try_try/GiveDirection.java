@@ -1,6 +1,7 @@
 package com.singh_shivalika.try_try;
 
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -13,7 +14,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.camera.view.PreviewView;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
+import com.google.ar.core.exceptions.CameraNotAvailableException;
 import com.google.ar.sceneform.ux.ArFragment;
+
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 
 public class GiveDirection extends AppCompatActivity implements View.OnTouchListener {
 
@@ -29,19 +34,20 @@ public class GiveDirection extends AppCompatActivity implements View.OnTouchList
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_givedirection);
-        arFragment = (ArFragment) getSupportFragmentManager().findFragmentById(R.id.arfragment);
 
         previewView = findViewById(R.id.view_finder);
+        arFragment = (ArFragment) getSupportFragmentManager().findFragmentById(R.id.arfragment);
+        ((ThisApplication)getApplication()).arFragment = arFragment;
 
         //cameraClass = new CameraClass(previewView,this);
         //((ThisApplication)getApplication()).setCameraClass(cameraClass);
-        ((ThisApplication)getApplication()).arFragment = arFragment;
 
         tap_area = findViewById(R.id.tap_area);
         box = findViewById(R.id.box);
         Intent i = getIntent();
         startCustomNav(i.getStringExtra("DATAPOINTS"));
 
+        arFragment.getArSceneView().pauseAsync(AsyncTask.THREAD_POOL_EXECUTOR);
         tap_area.setOnTouchListener(this);
     }
 
@@ -83,16 +89,21 @@ public class GiveDirection extends AppCompatActivity implements View.OnTouchList
     @Override
     public boolean onTouch(View view, MotionEvent event) {
         if(event.getAction()==MotionEvent.ACTION_DOWN){
-            /*((ThisApplication)getApplication()).cameraClass.startCamera();
-                    ((ThisApplication)getApplication()).objectDetector.startDetecting();
-                    ((ThisApplication)getApplication()).objectDetector.cont = true;*/
+            try { arFragment.getArSceneView().resume(); } catch (CameraNotAvailableException e) { e.printStackTrace(); }
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    ((ThisApplication)getApplication()).objectDetector.cont = true;
                     ((ThisApplication)getApplication()).mode = 1;
+                    ((ThisApplication)getApplication()).objectDetector.startDetecting();
+                }
+            }).start();
         }
 
         else if(event.getAction()==MotionEvent.ACTION_UP){
-            /*((ThisApplication)getApplication()).objectDetector.cont = false;
-            ((ThisApplication)getApplication()).cameraClass.stopCamera();*/
+            ((ThisApplication)getApplication()).objectDetector.cont = false;
             ((ThisApplication)getApplication()).mode = 0;
+            arFragment.getArSceneView().pause();
         }
         return true;
     }

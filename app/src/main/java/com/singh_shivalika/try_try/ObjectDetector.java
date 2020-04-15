@@ -29,8 +29,6 @@ import com.google.firebase.ml.vision.objects.FirebaseVisionObjectDetectorOptions
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
 
 public class ObjectDetector implements OnSuccessListener<List<FirebaseVisionImageLabel>> {
 
@@ -54,16 +52,19 @@ public class ObjectDetector implements OnSuccessListener<List<FirebaseVisionImag
 
     public void startDetecting(){
         ArFragment arfr = ((ThisApplication) ((AppCompatActivity) appcontext).getApplication()).arFragment;
-        Log.e("LOL",arfr.getArSceneView().getArFrame().toString());
         try {
             detect(arfr.getArSceneView().getArFrame().acquireCameraImage());
-        }catch (NotYetAvailableException e){ Log.e("NOT_AVAI","Not available, initiating"); startDetecting(); }
+        }catch (Exception e){
+            Log.e("NOT_AVAI","Not available, initiating"+e.toString());
+            if(((ThisApplication)((AppCompatActivity)appcontext).getApplication()).mode == 1)
+                startDetecting(); }
     }
 
     @SuppressLint("UnsafeExperimentalUsageError")
     public void detect(Image img) {
         detectedObjects.clear();
         FirebaseVisionImage image = FirebaseVisionImage.fromMediaImage(img,0);
+        img.close();
         objectDetector.processImage(image).addOnSuccessListener(detectedObjects -> {
 
             for(FirebaseVisionObject o : detectedObjects){
