@@ -13,8 +13,10 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.camera.core.ImageAnalysis;
 import androidx.camera.core.ImageProxy;
+import androidx.fragment.app.Fragment;
 
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.ar.sceneform.ux.ArFragment;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.ml.vision.FirebaseVision;
 import com.google.firebase.ml.vision.common.FirebaseVisionImage;
@@ -52,6 +54,10 @@ public class ObjectDetector implements OnSuccessListener<List<FirebaseVisionImag
     public void startDetecting(){
         ImageAnalysis imageAnalysis = ((ThisApplication)((AppCompatActivity)appcontext).getApplication()).imageAnalysis;
         imageAnalysis.setAnalyzer(AsyncTask.THREAD_POOL_EXECUTOR, image -> detect(image));
+
+        ArFragment arfr = ((ThisApplication) ((AppCompatActivity) appcontext).getApplication()).arFragment;
+
+        Log.e("LOL",arfr.getArSceneView().getArFrame().toString());
     }
 
     @SuppressLint("UnsafeExperimentalUsageError")

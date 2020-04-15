@@ -13,6 +13,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.camera.view.PreviewView;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
+import com.google.ar.sceneform.ux.ArFragment;
+
 public class GiveDirection extends AppCompatActivity implements View.OnTouchListener {
 
     ConstraintLayout tap_area;
@@ -20,16 +22,20 @@ public class GiveDirection extends AppCompatActivity implements View.OnTouchList
     Navigator navigator;
     PreviewView previewView;
     CameraClass cameraClass;
+    ArFragment arFragment;
+
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_givedirection);
+        arFragment = (ArFragment) getSupportFragmentManager().findFragmentById(R.id.arfragment);
 
         previewView = findViewById(R.id.view_finder);
 
         cameraClass = new CameraClass(previewView,this);
         ((ThisApplication)getApplication()).setCameraClass(cameraClass);
+        ((ThisApplication)getApplication()).arFragment = arFragment;
 
         tap_area = findViewById(R.id.tap_area);
         box = findViewById(R.id.box);

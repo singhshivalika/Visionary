@@ -7,8 +7,11 @@ import androidx.camera.core.ImageAnalysis;
 import androidx.camera.core.impl.ImageAnalysisConfig;
 import androidx.camera.view.PreviewView;
 
+import com.google.ar.sceneform.ux.ArFragment;
+
 public class ThisApplication extends Application {
 
+    public ArFragment arFragment;
     private boolean give_Instruction = false;
     public VoiceClass voiceClass;
     public ObjectDetector objectDetector;
