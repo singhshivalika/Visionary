@@ -61,16 +61,17 @@ public class ObjectDetector {
         labeler = FirebaseVision.getInstance().getOnDeviceImageLabeler();
     }
 
-
     public void startDetecting(){
         ArFragment arfr = ((ThisApplication) ((AppCompatActivity) appcontext).getApplication()).arFragment;
-        try {
-            detect(arfr.getArSceneView().getArFrame().acquireCameraImage());
-        }catch (Exception e){
-            Log.e("NOT_AVAI","Not available, initiating "+e.toString());
-            if(((ThisApplication)((AppCompatActivity)appcontext).getApplication()).mode == 1)
-                startDetecting();
-        }
+        new Thread(()->{
+            try {
+                detect(arfr.getArSceneView().getArFrame().acquireCameraImage());
+            }catch (Exception e) {
+                Log.e("NOT_AVAI", "Not available, initiating " + e.getMessage());
+                if (((ThisApplication) ((AppCompatActivity) appcontext).getApplication()).mode == 1)
+                    startDetecting();
+            }
+        });
     }
 
     Map<String,DetectedObject> detected_objs = new HashMap<>();
@@ -82,41 +83,41 @@ public class ObjectDetector {
         img.close();
         objectDetector.processImage(image).addOnSuccessListener(detectedObjects -> {
 
-            for(FirebaseVisionObject o : detectedObjects){
-                Rect extraRect = new Rect( Math.max(0,o.getBoundingBox().left-MARGIN),Math.max(0,o.getBoundingBox().top-MARGIN),Math.min(o.getBoundingBox().right+MARGIN,image.getBitmap().getWidth()),Math.min(o.getBoundingBox().bottom+MARGIN,image.getBitmap().getHeight()));
-                labeler.processImage(FirebaseVisionImage.fromBitmap(Bitmap.createBitmap( image.getBitmap() ,extraRect.left,extraRect.top,extraRect.width(),extraRect.height()))).addOnSuccessListener(firebaseVisionImageLabels -> {
+            for(FirebaseVisionObject o : detectedObjects) {
+                Rect extraRect = new Rect(Math.max(0, o.getBoundingBox().left - MARGIN), Math.max(0, o.getBoundingBox().top - MARGIN), Math.min(o.getBoundingBox().right + MARGIN, image.getBitmap().getWidth()), Math.min(o.getBoundingBox().bottom + MARGIN, image.getBitmap().getHeight()));
+                labeler.processImage(FirebaseVisionImage.fromBitmap(Bitmap.createBitmap(image.getBitmap(), extraRect.left, extraRect.top, extraRect.width(), extraRect.height()))).addOnSuccessListener(firebaseVisionImageLabels -> {
 
                     double confidence = 0;
-                    String product="";
+                    String product = "";
                     DetectedObject object = new DetectedObject();
 
-                    for(FirebaseVisionImageLabel l : firebaseVisionImageLabels){
-                        Log.e("LOL",l.getText()+" "+l.getConfidence());
-                        if(l.getConfidence()>confidence) {
-                                product = l.getText();
-                                confidence = l.getConfidence();
-                                object.setConfidence(confidence);
-                                object.setProduct(product);
-                                object.setX_Y((double) (extraRect.left+extraRect.right)/2, (double) (extraRect.top+extraRect.bottom)/2);
-                                detected_objs.put(product, object);
+                    for (FirebaseVisionImageLabel l : firebaseVisionImageLabels) {
+                        Log.e("LOL", l.getText() + " " + l.getConfidence());
+                        if (l.getConfidence() > confidence) {
+                            product = l.getText();
+                            confidence = l.getConfidence();
+                            object.setConfidence(confidence);
+                            object.setProduct(product);
+                            object.setX_Y((double) (extraRect.left + extraRect.right) / 2, (double) (extraRect.top + extraRect.bottom) / 2);
+                            detected_objs.put(product, object);
                         }
                     }
-                    getDistance();
                 });
             }
+            getDistance();
             say();
         });
     }// my phone battery died... are u there............
 
     private void getDistance() {
-        ArFragment arFragment =  ((ThisApplication) ((GiveDirection)appcontext).getApplication()).arFragment;
+        ArFragment arFragment =  ((ThisApplication) ((MainActivity)appcontext).getApplication()).arFragment;
         if(arFragment==null)return;
 
         Session arSession = arFragment.getArSceneView().getSession();
         if(arSession==null)return;
 
-        Frame f=null;
-        try { f = arSession.update(); } catch (CameraNotAvailableException e) { }
+        Frame f=null;Image temp=null;
+        try { f = arSession.update();temp = f.acquireCameraImage(); } catch (CameraNotAvailableException | NotYetAvailableException e) { }
 
         if(f==null)return;
 
@@ -129,6 +130,7 @@ public class ObjectDetector {
             HitResult currentHit = (HitResult) results.toArray()[0];
             o.setDistance(currentHit.getDistance());
         }
+        temp.close();
     }
 
     private void say() {

@@ -89,10 +89,10 @@ public class GiveDirection extends AppCompatActivity implements View.OnTouchList
     @Override
     public boolean onTouch(View view, MotionEvent event) {
         if(event.getAction()==MotionEvent.ACTION_DOWN){
-            try { arFragment.getArSceneView().resume(); } catch (CameraNotAvailableException e) { e.printStackTrace(); }
             new Thread(new Runnable() {
                 @Override
                 public void run() {
+                    runOnUiThread(()->{try { arFragment.getArSceneView().resume(); } catch (CameraNotAvailableException e) { e.printStackTrace(); }});
                     ((ThisApplication)getApplication()).objectDetector.cont = true;
                     ((ThisApplication)getApplication()).mode = 1;
                     ((ThisApplication)getApplication()).objectDetector.startDetecting();
