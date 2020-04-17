@@ -64,7 +64,11 @@ public class ObjectDetector implements Scene.OnUpdateListener {
     }
 
     public void startDetecting(){
-        arfr.getArSceneView().getScene().addOnUpdateListener(this);
+        arfr = ((ThisApplication) ((AppCompatActivity) appcontext).getApplication()).arFragment;
+        if(arfr!=null)
+            arfr.getArSceneView().getScene().addOnUpdateListener(this);
+        else if(((ThisApplication)((AppCompatActivity)appcontext).getApplication()).mode == 1)
+            startDetecting();
     }
 
     Map<String,DetectedObject> detected_objs = new HashMap<>();
@@ -86,7 +90,7 @@ public class ObjectDetector implements Scene.OnUpdateListener {
 
                     for (FirebaseVisionImageLabel l : firebaseVisionImageLabels) {
                         Log.e("LOL", l.getText() + " " + l.getConfidence());
-                        if (l.getConfidence() > confidence) {
+                        if (l.getConfidence() > 0.85) {
                             product = l.getText();
                             confidence = l.getConfidence();
                             object.setConfidence(confidence);
@@ -98,7 +102,7 @@ public class ObjectDetector implements Scene.OnUpdateListener {
                 });
             }
         });
-    }// my phone battery died... are u there............
+    }
 
     private void getDistance() {
         ArFragment arFragment =  ((ThisApplication) ((MainActivity)appcontext).getApplication()).arFragment;
@@ -112,7 +116,7 @@ public class ObjectDetector implements Scene.OnUpdateListener {
             sb.append(detected_objs.get(str).getProduct() + " ");
             if(detected_objs.get(str).getDistance()!=0)sb.append(" at "+detected_objs.get(str).getDistance()+" meters");
         }
-
+        Log.e("OUTCOME",sb.toString());
         voiceClass.speak(sb.toString());
         try {
             Thread.sleep(100 * sb.toString().length());
@@ -155,6 +159,7 @@ public class ObjectDetector implements Scene.OnUpdateListener {
             if(results.size()==0)continue;
             HitResult currentHit = (HitResult) results.toArray()[0];
             o.setDistance(currentHit.getDistance());
+            Log.e("SET",String.valueOf(currentHit.getDistance()));
         }
         say();
         toDO = true;
