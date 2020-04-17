@@ -101,6 +101,7 @@ public class GiveDirection extends AppCompatActivity implements View.OnTouchList
         }
 
         else if(event.getAction()==MotionEvent.ACTION_UP){
+            ((ThisApplication)getApplication()).objectDetector.arfr.getArSceneView().getScene().removeOnUpdateListener(((ThisApplication)getApplication()).objectDetector);
             ((ThisApplication)getApplication()).objectDetector.cont = false;
             ((ThisApplication)getApplication()).mode = 0;
             arFragment.getArSceneView().pause();

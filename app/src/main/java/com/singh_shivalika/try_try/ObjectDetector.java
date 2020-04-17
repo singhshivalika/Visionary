@@ -41,7 +41,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ObjectDetector {
+public class ObjectDetector implements Scene.OnUpdateListener {
 
     private final static int MARGIN = 10;
     public boolean cont = false;
@@ -52,9 +52,11 @@ public class ObjectDetector {
     FirebaseVisionImageLabeler labeler;
 
     Context appcontext;
+    ArFragment arfr;
 
     ObjectDetector(Context appcontext){
         this.appcontext = appcontext;
+        arfr = ((ThisApplication) ((AppCompatActivity) appcontext).getApplication()).arFragment;
         FirebaseVisionObjectDetectorOptions options = new FirebaseVisionObjectDetectorOptions.Builder().setDetectorMode(FirebaseVisionObjectDetectorOptions.STREAM_MODE).enableClassification().build();
         FirebaseApp.initializeApp(appcontext);
         objectDetector = FirebaseVision.getInstance().getOnDeviceObjectDetector(options);
@@ -62,16 +64,7 @@ public class ObjectDetector {
     }
 
     public void startDetecting(){
-        ArFragment arfr = ((ThisApplication) ((AppCompatActivity) appcontext).getApplication()).arFragment;
-        new Thread(()->{
-            try {
-                detect(arfr.getArSceneView().getArFrame().acquireCameraImage());
-            }catch (Exception e) {
-                Log.e("NOT_AVAI", "Not available, initiating " + e.getMessage());
-                if (((ThisApplication) ((AppCompatActivity) appcontext).getApplication()).mode == 1)
-                    startDetecting();
-            }
-        });
+        arfr.getArSceneView().getScene().addOnUpdateListener(this);
     }
 
     Map<String,DetectedObject> detected_objs = new HashMap<>();
@@ -104,33 +97,12 @@ public class ObjectDetector {
                     }
                 });
             }
-            getDistance();
-            say();
         });
     }// my phone battery died... are u there............
 
     private void getDistance() {
         ArFragment arFragment =  ((ThisApplication) ((MainActivity)appcontext).getApplication()).arFragment;
         if(arFragment==null)return;
-
-        Session arSession = arFragment.getArSceneView().getSession();
-        if(arSession==null)return;
-
-        Frame f=null;Image temp=null;
-        try { f = arSession.update();temp = f.acquireCameraImage(); } catch (CameraNotAvailableException | NotYetAvailableException e) { }
-
-        if(f==null)return;
-
-        MotionEvent motionEvent = null;
-
-        for(DetectedObject o : detected_objs.values()){
-            motionEvent = MotionEvent.obtain(SystemClock.uptimeMillis(), SystemClock.uptimeMillis()+10, MotionEvent.ACTION_UP, (int) o.getX(), (int) o.getY(), 0);
-            Collection<HitResult> results =  f.hitTest(motionEvent.getX(),motionEvent.getY());
-            if(results.size()==0)continue;
-            HitResult currentHit = (HitResult) results.toArray()[0];
-            o.setDistance(currentHit.getDistance());
-        }
-        temp.close();
     }
 
     private void say() {
@@ -154,4 +126,37 @@ public class ObjectDetector {
         this.voiceClass = voiceClass;
     }
 
+    boolean toDO = true;
+    @Override
+    public void onUpdate(FrameTime frameTime) {
+        if(!toDO)return;
+
+        toDO = false;
+        Session arSession = arfr.getArSceneView().getSession();
+        if(arSession==null)return;
+
+        Frame f=null;
+        try { f = arSession.update(); } catch (CameraNotAvailableException e) {
+            if (((ThisApplication) ((AppCompatActivity) appcontext).getApplication()).mode == 1)
+                startDetecting();
+        }
+
+        if(f==null)return;
+
+        try {
+            detect(f.acquireCameraImage());
+        }catch (NotYetAvailableException e){ }
+
+        MotionEvent motionEvent = null;
+
+        for(DetectedObject o : detected_objs.values()){
+            motionEvent = MotionEvent.obtain(SystemClock.uptimeMillis(), SystemClock.uptimeMillis()+10, MotionEvent.ACTION_UP, (int) o.getX(), (int) o.getY(), 0);
+            Collection<HitResult> results =  f.hitTest(motionEvent.getX(),motionEvent.getY());
+            if(results.size()==0)continue;
+            HitResult currentHit = (HitResult) results.toArray()[0];
+            o.setDistance(currentHit.getDistance());
+        }
+        say();
+        toDO = true;
+    }
 }
