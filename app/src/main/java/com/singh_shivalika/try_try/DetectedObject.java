@@ -6,13 +6,11 @@ import com.google.android.gms.vision.label.ImageLabel;
 import com.google.firebase.ml.vision.label.FirebaseVisionImageLabel;
 import com.google.firebase.ml.vision.objects.FirebaseVisionObject;
 
-public class DetectedObject extends FirebaseVisionImageLabel {
+public class DetectedObject {
 
     private double distance,X,Y;
-
-    public DetectedObject(@NonNull ImageLabel imageLabel) {
-        super(imageLabel);
-    }
+    private String product;
+    private double confidence;
 
     public double getDistance() {
         return distance;
@@ -33,5 +31,21 @@ public class DetectedObject extends FirebaseVisionImageLabel {
     public void setX_Y(double X, double Y) {
         this.X = X;
         this.Y = Y;
+    }
+
+    public String getProduct() {
+        return product;
+    }
+
+    public void setProduct(String product) {
+        this.product = product;
+    }
+
+    public double getConfidence() {
+        return confidence;
+    }
+
+    public void setConfidence(double confidence) {
+        this.confidence = confidence;
     }
 }

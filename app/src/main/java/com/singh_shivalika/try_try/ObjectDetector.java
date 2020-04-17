@@ -69,7 +69,8 @@ public class ObjectDetector {
         }catch (Exception e){
             Log.e("NOT_AVAI","Not available, initiating "+e.toString());
             if(((ThisApplication)((AppCompatActivity)appcontext).getApplication()).mode == 1)
-                startDetecting(); }
+                startDetecting();
+        }
     }
 
     Map<String,DetectedObject> detected_objs = new HashMap<>();
@@ -87,14 +88,17 @@ public class ObjectDetector {
 
                     double confidence = 0;
                     String product="";
+                    DetectedObject object = new DetectedObject();
+
                     for(FirebaseVisionImageLabel l : firebaseVisionImageLabels){
                         Log.e("LOL",l.getText()+" "+l.getConfidence());
                         if(l.getConfidence()>confidence) {
                                 product = l.getText();
                                 confidence = l.getConfidence();
-                                DetectedObject detectedObject = (DetectedObject) l;
-                                detectedObject.setX_Y((double) (extraRect.left+extraRect.right)/2, (double) (extraRect.top+extraRect.bottom)/2);
-                                detected_objs.put(product, detectedObject);
+                                object.setConfidence(confidence);
+                                object.setProduct(product);
+                                object.setX_Y((double) (extraRect.left+extraRect.right)/2, (double) (extraRect.top+extraRect.bottom)/2);
+                                detected_objs.put(product, object);
                         }
                     }
                     getDistance();
@@ -102,7 +106,7 @@ public class ObjectDetector {
             }
             say();
         });
-    }
+    }// my phone battery died... are u there............
 
     private void getDistance() {
         ArFragment arFragment =  ((ThisApplication) ((GiveDirection)appcontext).getApplication()).arFragment;
@@ -131,7 +135,7 @@ public class ObjectDetector {
         if(detected_objs.size()==0){startDetecting(); return;}
         StringBuilder sb = new StringBuilder();
         for(String str: detected_objs.keySet()) {
-            sb.append(detected_objs.get(str).getText() + " ");
+            sb.append(detected_objs.get(str).getProduct() + " ");
             if(detected_objs.get(str).getDistance()!=0)sb.append(" at "+detected_objs.get(str).getDistance()+" meters");
         }
 
