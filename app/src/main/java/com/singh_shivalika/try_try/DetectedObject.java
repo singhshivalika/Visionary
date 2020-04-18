@@ -12,6 +12,13 @@ public class DetectedObject {
     private String product;
     private double confidence;
 
+    DetectedObject(){}
+
+    DetectedObject(String product, double confidence){
+        this.product = product;
+        this.confidence = confidence;
+    }
+
     public double getDistance() {
         return distance;
     }

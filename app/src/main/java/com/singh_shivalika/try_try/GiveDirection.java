@@ -25,7 +25,6 @@ public class GiveDirection extends AppCompatActivity implements View.OnTouchList
     ConstraintLayout tap_area;
     TextView box;
     Navigator navigator;
-    PreviewView previewView;
     CameraClass cameraClass;
     ArFragment arFragment;
 
@@ -35,12 +34,9 @@ public class GiveDirection extends AppCompatActivity implements View.OnTouchList
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_givedirection);
 
-        previewView = findViewById(R.id.view_finder);
         arFragment = (ArFragment) getSupportFragmentManager().findFragmentById(R.id.arfragment);
+        arFragment.getView().setVisibility(View.INVISIBLE);
         ((ThisApplication)getApplication()).arFragment = arFragment;
-
-        //cameraClass = new CameraClass(previewView,this);
-        //((ThisApplication)getApplication()).setCameraClass(cameraClass);
 
         tap_area = findViewById(R.id.tap_area);
         box = findViewById(R.id.box);

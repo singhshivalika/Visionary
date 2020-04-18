@@ -17,6 +17,7 @@ import androidx.camera.core.ImageAnalysis;
 import androidx.camera.core.ImageProxy;
 import androidx.fragment.app.Fragment;
 
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.ar.core.Frame;
 import com.google.ar.core.HitResult;
@@ -34,6 +35,8 @@ import com.google.firebase.ml.vision.label.FirebaseVisionImageLabeler;
 import com.google.firebase.ml.vision.objects.FirebaseVisionObject;
 import com.google.firebase.ml.vision.objects.FirebaseVisionObjectDetector;
 import com.google.firebase.ml.vision.objects.FirebaseVisionObjectDetectorOptions;
+import com.google.firebase.ml.vision.text.FirebaseVisionText;
+import com.google.firebase.ml.vision.text.FirebaseVisionTextRecognizer;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -49,6 +52,7 @@ public class ObjectDetector implements Scene.OnUpdateListener {
     VoiceClass voiceClass;
 
     FirebaseVisionObjectDetector objectDetector;
+    FirebaseVisionTextRecognizer textRecognizer;
     FirebaseVisionImageLabeler labeler;
 
     Context appcontext;
@@ -61,60 +65,84 @@ public class ObjectDetector implements Scene.OnUpdateListener {
         FirebaseApp.initializeApp(appcontext);
         objectDetector = FirebaseVision.getInstance().getOnDeviceObjectDetector(options);
         labeler = FirebaseVision.getInstance().getOnDeviceImageLabeler();
+        textRecognizer = FirebaseVision.getInstance().getOnDeviceTextRecognizer();
     }
 
     public void startDetecting(){
         arfr = ((ThisApplication) ((AppCompatActivity) appcontext).getApplication()).arFragment;
         if(arfr!=null)
-            arfr.getArSceneView().getScene().addOnUpdateListener(this);
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    arfr.getArSceneView().getScene().addOnUpdateListener(ObjectDetector.this);
+                }
+            }).start();
         else if(((ThisApplication)((AppCompatActivity)appcontext).getApplication()).mode == 1)
             startDetecting();
     }
 
     Map<String,DetectedObject> detected_objs = new HashMap<>();
-
-    public void detect(Image img) {
-        detected_objs.clear();
-
+    FirebaseVisionImage image = null;
+    public void detect(Image img){
         FirebaseVisionImage image = FirebaseVisionImage.fromMediaImage(img,0);
+        this.image = image;
         img.close();
-        objectDetector.processImage(image).addOnSuccessListener(detectedObjects -> {
 
-            for(FirebaseVisionObject o : detectedObjects) {
-                Rect extraRect = new Rect(Math.max(0, o.getBoundingBox().left - MARGIN), Math.max(0, o.getBoundingBox().top - MARGIN), Math.min(o.getBoundingBox().right + MARGIN, image.getBitmap().getWidth()), Math.min(o.getBoundingBox().bottom + MARGIN, image.getBitmap().getHeight()));
-                labeler.processImage(FirebaseVisionImage.fromBitmap(Bitmap.createBitmap(image.getBitmap(), extraRect.left, extraRect.top, extraRect.width(), extraRect.height()))).addOnSuccessListener(firebaseVisionImageLabels -> {
+        textRecognizer.processImage(image).addOnSuccessListener(firebaseVisionText -> {
+            String text = "Detected text as follows : " + firebaseVisionText;
+            VoiceClass.speak(text);
+            try {
+                Thread.sleep(text.length() * 100);
+            }catch (Exception e){}
+        }).addOnFailureListener(e -> objectDetector.processImage(image).addOnSuccessListener(detectlistener));
 
-                    double confidence = 0;
-                    String product = "";
-                    DetectedObject object = new DetectedObject();
-
-                    for (FirebaseVisionImageLabel l : firebaseVisionImageLabels) {
-                        Log.e("LOL", l.getText() + " " + l.getConfidence());
-                        if (l.getConfidence() > 0.85) {
-                            product = l.getText();
-                            confidence = l.getConfidence();
-                            object.setConfidence(confidence);
-                            object.setProduct(product);
-                            object.setX_Y((double) (extraRect.left + extraRect.right) / 2, (double) (extraRect.top + extraRect.bottom) / 2);
-                            detected_objs.put(product, object);
-                        }
-                    }
-                });
-            }
-        });
+        if(detected_objs.size()!=0)
+            setDistances();
     }
 
-    private void getDistance() {
-        ArFragment arFragment =  ((ThisApplication) ((MainActivity)appcontext).getApplication()).arFragment;
-        if(arFragment==null)return;
+    OnSuccessListener detectlistener = (OnSuccessListener<List<FirebaseVisionObject>>) detectedObjects -> {
+
+        for (FirebaseVisionObject o : detectedObjects) {
+            Log.e("BBD", o.getBoundingBox().toShortString());
+            Rect extraRect = new Rect(Math.max(0, o.getBoundingBox().left - MARGIN), Math.max(0, o.getBoundingBox().top - MARGIN), Math.min(o.getBoundingBox().right + MARGIN, image.getBitmap().getWidth()), Math.min(o.getBoundingBox().bottom + MARGIN, image.getBitmap().getHeight()));
+            labeler.processImage(FirebaseVisionImage.fromBitmap(Bitmap.createBitmap(image.getBitmap(), extraRect.left, extraRect.top, extraRect.width(), extraRect.height()))).addOnSuccessListener(firebaseVisionImageLabels -> {
+
+                double confidence = 0;
+                String product = "";
+
+                for (FirebaseVisionImageLabel l : firebaseVisionImageLabels) {
+                    Log.e("LOL", l.getText() + " " + l.getConfidence());
+                    if (l.getConfidence() >= 0.7) {
+                        DetectedObject object = new DetectedObject(l.getText(), l.getConfidence());
+                        object.setX_Y((double) (o.getBoundingBox().left + o.getBoundingBox().right) / 2, (double) (o.getBoundingBox().top + o.getBoundingBox().bottom) / 2);
+                        detected_objs.put(product, object);
+                    }
+                }
+            });
+        }
+    };
+
+
+    private void setDistances() {
+        MotionEvent motionEvent = null;
+        Log.e("SETD",String.valueOf(detected_objs.size()));
+
+        for(DetectedObject o : detected_objs.values()){
+            motionEvent = MotionEvent.obtain(SystemClock.uptimeMillis(), SystemClock.uptimeMillis()+10, MotionEvent.ACTION_UP,(float) o.getX(),(float)o.getY(),2);
+            Collection<HitResult> results =  f.hitTest(motionEvent);
+            if(results.size()==0)continue;
+            HitResult currentHit = (HitResult) results.toArray()[0];
+            o.setDistance(currentHit.getDistance());
+            Log.e("SET",String.valueOf(currentHit.getDistance()));
+        }
+        say();
     }
 
     private void say() {
-        if(detected_objs.size()==0){startDetecting(); return;}
         StringBuilder sb = new StringBuilder();
         for(String str: detected_objs.keySet()) {
             sb.append(detected_objs.get(str).getProduct() + " ");
-            if(detected_objs.get(str).getDistance()!=0)sb.append(" at "+detected_objs.get(str).getDistance()+" meters");
+            if(detected_objs.get(str).getDistance()!=0)sb.append(" at "+String.format("%.1f",detected_objs.get(str).getDistance()) +" meters");
         }
         Log.e("OUTCOME",sb.toString());
         voiceClass.speak(sb.toString());
@@ -122,6 +150,7 @@ public class ObjectDetector implements Scene.OnUpdateListener {
             Thread.sleep(100 * sb.toString().length());
         }catch (Exception e){ }
 
+        detected_objs.clear();
         if(((ThisApplication)((AppCompatActivity)appcontext).getApplication()).mode == 1)
             startDetecting();
     }
@@ -130,16 +159,12 @@ public class ObjectDetector implements Scene.OnUpdateListener {
         this.voiceClass = voiceClass;
     }
 
-    boolean toDO = true;
+    Frame f=null;
     @Override
     public void onUpdate(FrameTime frameTime) {
-        if(!toDO)return;
-
-        toDO = false;
         Session arSession = arfr.getArSceneView().getSession();
         if(arSession==null)return;
 
-        Frame f=null;
         try { f = arSession.update(); } catch (CameraNotAvailableException e) {
             if (((ThisApplication) ((AppCompatActivity) appcontext).getApplication()).mode == 1)
                 startDetecting();
@@ -147,21 +172,10 @@ public class ObjectDetector implements Scene.OnUpdateListener {
 
         if(f==null)return;
 
-        try {
-            detect(f.acquireCameraImage());
-        }catch (NotYetAvailableException e){ }
-
-        MotionEvent motionEvent = null;
-
-        for(DetectedObject o : detected_objs.values()){
-            motionEvent = MotionEvent.obtain(SystemClock.uptimeMillis(), SystemClock.uptimeMillis()+10, MotionEvent.ACTION_UP, (int) o.getX(), (int) o.getY(), 0);
-            Collection<HitResult> results =  f.hitTest(motionEvent.getX(),motionEvent.getY());
-            if(results.size()==0)continue;
-            HitResult currentHit = (HitResult) results.toArray()[0];
-            o.setDistance(currentHit.getDistance());
-            Log.e("SET",String.valueOf(currentHit.getDistance()));
-        }
-        say();
-        toDO = true;
+            try {
+                detect(f.acquireCameraImage());
+            } catch (NotYetAvailableException e) {
+                e.printStackTrace();
+            }
     }
 }
