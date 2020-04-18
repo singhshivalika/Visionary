@@ -22,10 +22,7 @@
 
         <meta-data
             android:name="com.google.firebase.ml.vision.DEPENDENCIES"
-            android:value="label,model2,model3" />
-        <meta-data
-            android:name="com.google.firebase.ml.vision.DEPENDENCIES"
-            android:value="ocr,model2,model3" />
+            android:value="ocr,label,model2,model3" />
 
         <meta-data android:name="com.google.ar.core"
             android:value="required" />
