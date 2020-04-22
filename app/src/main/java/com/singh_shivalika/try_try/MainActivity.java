@@ -24,7 +24,7 @@ public class MainActivity extends AppCompatActivity {
     private SelfLocation selfLocation;
 
     private double currentLat,currentLng;
-    public static VoiceClass voiceClass = null;
+    public static VoiceClass voiceClass;
     ObjectDetector objectDetector;
 
     @Override
@@ -40,14 +40,14 @@ public class MainActivity extends AppCompatActivity {
         objectDetector = new ObjectDetector(this);
         ((ThisApplication)getApplication()).setObjectDetector(objectDetector);
 
-        runOnUiThread(()->{
-            selfLocation = new SelfLocation(this);
-            Log.e("Current Locaton",""+selfLocation.LATITUDE+" "+selfLocation.LONGITUDE);
+        runOnUiThread(() -> {
+            selfLocation = new SelfLocation(MainActivity.this);
+            Log.e("Current Location", "" + selfLocation.LATITUDE + " " + selfLocation.LONGITUDE);
             currentLat = 28.663067;
-            currentLng  = 77.452757;
-            /*currentLat = selfLocation.LATITUDE;
-            currentLng = selfLocation.LONGITUDE;*/
-            askUser();
+            currentLng = 77.452757;
+        /*currentLat = selfLocation.LATITUDE;
+        currentLng = selfLocation.LONGITUDE;*/
+            MainActivity.this.askUser();
         });
     }
 

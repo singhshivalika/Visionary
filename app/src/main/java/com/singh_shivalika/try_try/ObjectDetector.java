@@ -88,41 +88,46 @@ public class ObjectDetector implements Scene.OnUpdateListener {
         this.image = image;
         img.close();
 
-        textRecognizer.processImage(image).addOnSuccessListener(firebaseVisionText -> {
+
+        //TODO: Text Recognizer part in progress----------------------------------------------
+        /*textRecognizer.processImage(image).addOnSuccessListener(firebaseVisionText -> {
             String text = "Detected text as follows : ";
             for(FirebaseVisionText.TextBlock block : firebaseVisionText.getTextBlocks())
                 Log.e("DETECTED_TEXT",block.getText());
             //VoiceClass.speak(text);
             try {
                 Thread.sleep(text.length() * 100);
-            }catch (Exception e){}
-        }).addOnFailureListener(e -> objectDetector.processImage(image).addOnSuccessListener(detectlistener));
+            }catch (Exception e){ Log.e("Exception",e.getMessage()); }
+        }).addOnFailureListener(e ->{
+            Log.e("Failure","Downloading + "+ e.getMessage());
+            objectDetector.processImage(image).addOnSuccessListener(detectlistener);
+        });*/
+        //TODO : -----------------------------------------------------------------------------
+
+        objectDetector.processImage(image).addOnSuccessListener(detectedObjects -> {
+
+            for (FirebaseVisionObject o : detectedObjects) {
+                Log.e("BBD", o.getBoundingBox().toShortString());
+                Rect extraRect = new Rect(Math.max(0, o.getBoundingBox().left - MARGIN), Math.max(0, o.getBoundingBox().top - MARGIN), Math.min(o.getBoundingBox().right + MARGIN, image.getBitmap().getWidth()), Math.min(o.getBoundingBox().bottom + MARGIN, image.getBitmap().getHeight()));
+                labeler.processImage(FirebaseVisionImage.fromBitmap(Bitmap.createBitmap(image.getBitmap(), extraRect.left, extraRect.top, extraRect.width(), extraRect.height()))).addOnSuccessListener(firebaseVisionImageLabels -> {
+
+                    String product = "";
+
+                    for (FirebaseVisionImageLabel l : firebaseVisionImageLabels) {
+                        Log.e("LOL", l.getText() + " " + l.getConfidence());
+                        if (l.getConfidence() >= 0.7) {
+                            DetectedObject object = new DetectedObject(l.getText(), l.getConfidence());
+                            object.setX_Y((double) (o.getBoundingBox().left + o.getBoundingBox().right) / 2, (double) (o.getBoundingBox().top + o.getBoundingBox().bottom) / 2);
+                            detected_objs.put(product, object);
+                        }
+                    }
+                });
+            }
+        });
 
         if(detected_objs.size()!=0)
             setDistances();
     }
-
-    OnSuccessListener detectlistener = (OnSuccessListener<List<FirebaseVisionObject>>) detectedObjects -> {
-
-        for (FirebaseVisionObject o : detectedObjects) {
-            Log.e("BBD", o.getBoundingBox().toShortString());
-            Rect extraRect = new Rect(Math.max(0, o.getBoundingBox().left - MARGIN), Math.max(0, o.getBoundingBox().top - MARGIN), Math.min(o.getBoundingBox().right + MARGIN, image.getBitmap().getWidth()), Math.min(o.getBoundingBox().bottom + MARGIN, image.getBitmap().getHeight()));
-            labeler.processImage(FirebaseVisionImage.fromBitmap(Bitmap.createBitmap(image.getBitmap(), extraRect.left, extraRect.top, extraRect.width(), extraRect.height()))).addOnSuccessListener(firebaseVisionImageLabels -> {
-
-                double confidence = 0;
-                String product = "";
-
-                for (FirebaseVisionImageLabel l : firebaseVisionImageLabels) {
-                    Log.e("LOL", l.getText() + " " + l.getConfidence());
-                    if (l.getConfidence() >= 0.7) {
-                        DetectedObject object = new DetectedObject(l.getText(), l.getConfidence());
-                        object.setX_Y((double) (o.getBoundingBox().left + o.getBoundingBox().right) / 2, (double) (o.getBoundingBox().top + o.getBoundingBox().bottom) / 2);
-                        detected_objs.put(product, object);
-                    }
-                }
-            });
-        }
-    };
 
 
     private void setDistances() {
