@@ -144,8 +144,6 @@ public class ObjectDetector implements Scene.OnUpdateListener {
     }
 
 
-
-
     private void setDistances() {
         MotionEvent motionEvent = null;
         Log.e("SETD",String.valueOf(detected_objs.size()));
