@@ -51,8 +51,6 @@ public class ObjectDetector implements Scene.OnUpdateListener {
     private final static int MARGIN = 10;
     public boolean cont = false;
 
-    boolean update_attached = false;
-
     VoiceClass voiceClass;
 
     FirebaseVisionObjectDetector objectDetector;
@@ -77,62 +75,75 @@ public class ObjectDetector implements Scene.OnUpdateListener {
         if(((ThisApplication)((AppCompatActivity)appcontext).getApplication()).mode == 0)
             return;
 
-        if(arfr!=null && !update_attached) {
-            arfr.getArSceneView().getScene().addOnUpdateListener(ObjectDetector.this);
-            update_attached = true;
+        if(arfr!=null) {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    arfr.getArSceneView().getScene().addOnUpdateListener(ObjectDetector.this);
+                }
+            }).start();
         }
     }
 
+
     Map<String,DetectedObject> detected_objs = new HashMap<>();
     FirebaseVisionImage image = null;
+
     public void detect(Image img){
         FirebaseVisionImage image = FirebaseVisionImage.fromMediaImage(img, 1);
         this.image = image;
         img.close();
 
-        // TODO :---------------------------------------------------------------------------------------
+        // Text Recognizer...
         textRecognizer.processImage(image).addOnSuccessListener(firebaseVisionText -> {
             String text = "Detected text as follows : ";
             for(FirebaseVisionText.TextBlock block : firebaseVisionText.getTextBlocks())
                 for (FirebaseVisionText.Line line: block.getLines())
                     text += line.getText();
 
-            Log.e("DETECTED_TEXT",text);
+            Log.e("DETECTED_TEXT : ",text);
             //VoiceClass.speak(text);
             try {
                 Thread.sleep(text.length() * 100);
             }catch (Exception e){ Log.e("Exception","Exceptiom"); }
+
+            //Object Detector starting...
+            objectDetector.processImage(image).addOnSuccessListener(detectedObjects -> {
+
+                for (FirebaseVisionObject o : detectedObjects) {
+                    Log.e("BBD", o.getBoundingBox().toShortString());
+                    Rect extraRect = new Rect(Math.max(0, o.getBoundingBox().left - MARGIN), Math.max(0, o.getBoundingBox().top - MARGIN), Math.min(o.getBoundingBox().right + MARGIN, image.getBitmap().getWidth()), Math.min(o.getBoundingBox().bottom + MARGIN, image.getBitmap().getHeight()));
+
+                    //Labeler starting...
+                    labeler.processImage(FirebaseVisionImage.fromBitmap(Bitmap.createBitmap(image.getBitmap(), extraRect.left, extraRect.top, extraRect.width(), extraRect.height()))).addOnSuccessListener(firebaseVisionImageLabels -> {
+
+                        String product = "";
+                        for (FirebaseVisionImageLabel l : firebaseVisionImageLabels) {
+                            Log.e("LOL", l.getText() + " " + l.getConfidence());
+                            if (l.getConfidence() >= 0.7) {
+                                DetectedObject object = new DetectedObject(l.getText(), l.getConfidence());
+                                object.setX_Y((double) (o.getBoundingBox().left + o.getBoundingBox().right) / 2, (double) (o.getBoundingBox().top + o.getBoundingBox().bottom) / 2);
+                                detected_objs.put(product, object);
+                            }
+                        }
+                    });
+                }
+            });
+
         }).addOnFailureListener(e ->{
-            Log.e("Failure","Downloading + " );
             //objectDetector.processImage(image).addOnSuccessListener(detectlistener);
         });
         //TODO : -----------------------------------------------------------------------------
 
-        objectDetector.processImage(image).addOnSuccessListener(detectedObjects -> {
 
-            for (FirebaseVisionObject o : detectedObjects) {
-                Log.e("BBD", o.getBoundingBox().toShortString());
-                Rect extraRect = new Rect(Math.max(0, o.getBoundingBox().left - MARGIN), Math.max(0, o.getBoundingBox().top - MARGIN), Math.min(o.getBoundingBox().right + MARGIN, image.getBitmap().getWidth()), Math.min(o.getBoundingBox().bottom + MARGIN, image.getBitmap().getHeight()));
-                labeler.processImage(FirebaseVisionImage.fromBitmap(Bitmap.createBitmap(image.getBitmap(), extraRect.left, extraRect.top, extraRect.width(), extraRect.height()))).addOnSuccessListener(firebaseVisionImageLabels -> {
-
-                    String product = "";
-
-                    for (FirebaseVisionImageLabel l : firebaseVisionImageLabels) {
-                        Log.e("LOL", l.getText() + " " + l.getConfidence());
-                        if (l.getConfidence() >= 0.7) {
-                            DetectedObject object = new DetectedObject(l.getText(), l.getConfidence());
-                            object.setX_Y((double) (o.getBoundingBox().left + o.getBoundingBox().right) / 2, (double) (o.getBoundingBox().top + o.getBoundingBox().bottom) / 2);
-                            detected_objs.put(product, object);
-                        }
-                    }
-                });
-            }
-        });
 
         if(detected_objs.size()!=0)
             setDistances();
 
+        ready = true;
     }
+
+
 
 
     private void setDistances() {
@@ -163,8 +174,6 @@ public class ObjectDetector implements Scene.OnUpdateListener {
         }catch (Exception e){ }
 
         detected_objs.clear();
-        if(((ThisApplication)((AppCompatActivity)appcontext).getApplication()).mode == 1)
-            startDetecting();
     }
 
     public void setVoiceClass(VoiceClass voiceClass) {
@@ -173,24 +182,25 @@ public class ObjectDetector implements Scene.OnUpdateListener {
 
 
     Frame f=null;
+    boolean ready = true;
+
     @Override
     public void onUpdate(FrameTime frameTime) {
+        Log.e("UPDATE","AR_UPDT");
+        if(!ready){Log.e("LOL","NOT READY"); return;}
+
         Session arSession = arfr.getArSceneView().getSession();
         if(arSession==null)return;
 
-        try { f = arSession.update(); } catch (CameraNotAvailableException e) {
-            if (((ThisApplication) ((AppCompatActivity) appcontext).getApplication()).mode == 1)
-                startDetecting();
-        }
+        try { f = arSession.update(); }
+        catch (CameraNotAvailableException e) { }
 
         if(f==null)return;
-            try {
-                detect(f.acquireCameraImage());
-                Thread.sleep(200);
-            } catch (NotYetAvailableException e) {
-            }catch(InterruptedException e){
-            }
 
+        try {
+            detect(f.acquireCameraImage());
+        }catch (Exception e){
+        }
 
     }
 }
