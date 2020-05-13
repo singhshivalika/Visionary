@@ -15,6 +15,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.camera.core.ImageAnalysis;
 import androidx.camera.core.ImageProxy;
+import androidx.camera.core.impl.ImageOutputConfig;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.gms.tasks.OnFailureListener;
@@ -30,6 +31,7 @@ import com.google.ar.sceneform.ux.ArFragment;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.ml.vision.FirebaseVision;
 import com.google.firebase.ml.vision.common.FirebaseVisionImage;
+import com.google.firebase.ml.vision.common.FirebaseVisionImageMetadata;
 import com.google.firebase.ml.vision.label.FirebaseVisionImageLabel;
 import com.google.firebase.ml.vision.label.FirebaseVisionImageLabeler;
 import com.google.firebase.ml.vision.objects.FirebaseVisionObject;
@@ -48,6 +50,8 @@ public class ObjectDetector implements Scene.OnUpdateListener {
 
     private final static int MARGIN = 10;
     public boolean cont = false;
+
+    boolean update_attached = false;
 
     VoiceClass voiceClass;
 
@@ -70,22 +74,21 @@ public class ObjectDetector implements Scene.OnUpdateListener {
 
     public void startDetecting(){
         arfr = ((ThisApplication) ((AppCompatActivity) appcontext).getApplication()).arFragment;
-        if(arfr!=null)
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    arfr.getArSceneView().getScene().addOnUpdateListener(ObjectDetector.this);
-                }
-            }).start();
-        else if(((ThisApplication)((AppCompatActivity)appcontext).getApplication()).mode == 1)
-            startDetecting();
+        if(((ThisApplication)((AppCompatActivity)appcontext).getApplication()).mode == 0)
+            return;
+
+        if(arfr!=null && !update_attached) {
+            arfr.getArSceneView().getScene().addOnUpdateListener(ObjectDetector.this);
+            update_attached = true;
+        }
     }
 
     Map<String,DetectedObject> detected_objs = new HashMap<>();
     FirebaseVisionImage image = null;
     public void detect(Image img){
-        FirebaseVisionImage image = FirebaseVisionImage.fromMediaImage(img,270);
+        FirebaseVisionImage image = FirebaseVisionImage.fromMediaImage(img, 1);
         this.image = image;
+        img.close();
 
         // TODO :---------------------------------------------------------------------------------------
         textRecognizer.processImage(image).addOnSuccessListener(firebaseVisionText -> {
@@ -129,7 +132,6 @@ public class ObjectDetector implements Scene.OnUpdateListener {
         if(detected_objs.size()!=0)
             setDistances();
 
-        img.close();
     }
 
 
@@ -169,6 +171,7 @@ public class ObjectDetector implements Scene.OnUpdateListener {
         this.voiceClass = voiceClass;
     }
 
+
     Frame f=null;
     @Override
     public void onUpdate(FrameTime frameTime) {
@@ -181,11 +184,13 @@ public class ObjectDetector implements Scene.OnUpdateListener {
         }
 
         if(f==null)return;
-
             try {
                 detect(f.acquireCameraImage());
+                Thread.sleep(200);
             } catch (NotYetAvailableException e) {
-                e.printStackTrace();
+            }catch(InterruptedException e){
             }
+
+
     }
 }

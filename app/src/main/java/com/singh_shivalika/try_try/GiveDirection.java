@@ -35,7 +35,7 @@ public class GiveDirection extends AppCompatActivity implements View.OnTouchList
         setContentView(R.layout.activity_givedirection);
 
         arFragment = (ArFragment) getSupportFragmentManager().findFragmentById(R.id.arfragment);
-        //arFragment.getView().setVisibility(View.INVISIBLE);
+        arFragment.getView().setVisibility(View.INVISIBLE);
         ((ThisApplication)getApplication()).arFragment = arFragment;
 
         tap_area = findViewById(R.id.tap_area);
