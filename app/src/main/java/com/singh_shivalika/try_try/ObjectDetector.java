@@ -84,22 +84,23 @@ public class ObjectDetector implements Scene.OnUpdateListener {
     Map<String,DetectedObject> detected_objs = new HashMap<>();
     FirebaseVisionImage image = null;
     public void detect(Image img){
-        FirebaseVisionImage image = FirebaseVisionImage.fromMediaImage(img,0);
+        FirebaseVisionImage image = FirebaseVisionImage.fromMediaImage(img,270);
         this.image = image;
-        img.close();
-
 
         // TODO :---------------------------------------------------------------------------------------
         textRecognizer.processImage(image).addOnSuccessListener(firebaseVisionText -> {
             String text = "Detected text as follows : ";
             for(FirebaseVisionText.TextBlock block : firebaseVisionText.getTextBlocks())
-                Log.e("DETECTED_TEXT",block.getText());
+                for (FirebaseVisionText.Line line: block.getLines())
+                    text += line.getText();
+
+            Log.e("DETECTED_TEXT",text);
             //VoiceClass.speak(text);
             try {
                 Thread.sleep(text.length() * 100);
-            }catch (Exception e){ Log.e("Exception",e.getMessage()); }
+            }catch (Exception e){ Log.e("Exception","Exceptiom"); }
         }).addOnFailureListener(e ->{
-            Log.e("Failure","Downloading + "+ e.getMessage());
+            Log.e("Failure","Downloading + " );
             //objectDetector.processImage(image).addOnSuccessListener(detectlistener);
         });
         //TODO : -----------------------------------------------------------------------------
@@ -127,6 +128,8 @@ public class ObjectDetector implements Scene.OnUpdateListener {
 
         if(detected_objs.size()!=0)
             setDistances();
+
+        img.close();
     }
 
 

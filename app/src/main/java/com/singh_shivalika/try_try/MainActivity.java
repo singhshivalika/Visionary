@@ -140,10 +140,12 @@ public class MainActivity extends AppCompatActivity {
 
         final StringBuilder response= new StringBuilder();
         try {
+            //code to connect to server
             URL url = new URL("https://us1.locationiq.com/v1/search.php?key="+ URLEncoder.encode(getString(R.string.geocode_api))+"&q="+URLEncoder.encode(name).toLowerCase()+"&format=json");
             c =  (HttpURLConnection) url.openConnection();
             c.setRequestMethod("GET");
             c.setConnectTimeout(3000);
+            //e
 
             c.setDoOutput(true);
             c.setDoInput(true);

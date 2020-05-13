@@ -108,6 +108,7 @@ public class Navigator {
         json_data = ","+json_data;
         ArrayList<NodePoint> np = new ArrayList<NodePoint>();
 
+        //Nodepoints array
         String[] str = json_data.split("]");
         for(int i = 0; i< str.length; i++){
             String[] temp = str[i].substring(1).split(",");
@@ -119,7 +120,7 @@ public class Navigator {
 
         currentLocation = new NodePoint(coords.get(0).latitude,coords.get(0).longitude);
 
-        //Create paths
+        //Create paths and storing in array
         paths = new ArrayList<Path>();
         for(int i = 0; i< coords.size()-1;i++){
             paths.add(new Path(coords.get(i),coords.get(i+1)));
@@ -200,7 +201,7 @@ public class Navigator {
                 if (distance < MIN_DISTANCE_FOR_EARLY_NOTIFICATION) {
                     if (currentpath_index != paths.size() - 1) {
 
-                        //Next turn notification
+                        //less than 40 min distance checking
                         int nextBearing = (int) (paths.get(currentpath_index + 1).bearingAngle - getBearing(currentLocation.latitude, currentLocation.longitude, paths.get(currentpath_index).destination.latitude, paths.get(currentpath_index).destination.longitude));
                         if(nextBearing>MAX_ANGLE_DEVIATION) {
                             if (nextBearing > 0)
