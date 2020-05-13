@@ -89,8 +89,8 @@ public class ObjectDetector implements Scene.OnUpdateListener {
         img.close();
 
 
-        //TODO: Text Recognizer part in progress----------------------------------------------
-        /*textRecognizer.processImage(image).addOnSuccessListener(firebaseVisionText -> {
+        // TODO :---------------------------------------------------------------------------------------
+        textRecognizer.processImage(image).addOnSuccessListener(firebaseVisionText -> {
             String text = "Detected text as follows : ";
             for(FirebaseVisionText.TextBlock block : firebaseVisionText.getTextBlocks())
                 Log.e("DETECTED_TEXT",block.getText());
@@ -100,8 +100,8 @@ public class ObjectDetector implements Scene.OnUpdateListener {
             }catch (Exception e){ Log.e("Exception",e.getMessage()); }
         }).addOnFailureListener(e ->{
             Log.e("Failure","Downloading + "+ e.getMessage());
-            objectDetector.processImage(image).addOnSuccessListener(detectlistener);
-        });*/
+            //objectDetector.processImage(image).addOnSuccessListener(detectlistener);
+        });
         //TODO : -----------------------------------------------------------------------------
 
         objectDetector.processImage(image).addOnSuccessListener(detectedObjects -> {
