@@ -90,6 +90,7 @@ public class ObjectDetector implements Scene.OnUpdateListener {
     FirebaseVisionImage image = null;
 
     public void detect(Image img){
+        ready = false;
         FirebaseVisionImage image = FirebaseVisionImage.fromMediaImage(img, 1);
         this.image = image;
         img.close();
@@ -106,6 +107,8 @@ public class ObjectDetector implements Scene.OnUpdateListener {
             try {
                 Thread.sleep(text.length() * 100);
             }catch (Exception e){ Log.e("Exception","Exceptiom"); }
+
+
 
             //Object Detector starting...
             objectDetector.processImage(image).addOnSuccessListener(detectedObjects -> {
@@ -126,21 +129,25 @@ public class ObjectDetector implements Scene.OnUpdateListener {
                                 detected_objs.put(product, object);
                             }
                         }
+
+
+                        if(detected_objs.size()!=0)
+                            setDistances();
+                    }).addOnFailureListener(e -> {
+                        Log.e("FAIL1","1");
                     });
                 }
-            });
+                Log.e("DIVIDE","CONQUER");
+                ready = true;
+            }).addOnFailureListener(e -> {
+                Log.e("FAIL2","2");
+            });;
 
         }).addOnFailureListener(e ->{
+            Log.e("FAIL3","3");
             //objectDetector.processImage(image).addOnSuccessListener(detectlistener);
         });
-        //TODO : -----------------------------------------------------------------------------
-
-
-
-        if(detected_objs.size()!=0)
-            setDistances();
-
-        ready = true;
+        //TODO : ----------------------------------------------------------------------------
     }
 
 
@@ -156,7 +163,9 @@ public class ObjectDetector implements Scene.OnUpdateListener {
             o.setDistance(currentHit.getDistance());
             Log.e("SET",String.valueOf(currentHit.getDistance()));
         }
+
         say();
+
     }
 
     private void say() {
@@ -196,6 +205,7 @@ public class ObjectDetector implements Scene.OnUpdateListener {
         if(f==null)return;
 
         try {
+            Log.e("DETECT M","d");
             detect(f.acquireCameraImage());
         }catch (Exception e){
         }
