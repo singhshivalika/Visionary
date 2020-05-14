@@ -130,15 +130,13 @@ public class ObjectDetector implements Scene.OnUpdateListener {
                                 detected_objs.put(product, object);
                             }
                         }
-
-
-                        if(detected_objs.size()!=0)
-                            setDistances();
                     }).addOnFailureListener(e -> {
                         Log.e("FAIL1","1");
                     });
                 }
                 Log.e("DIVIDE","CONQUER");
+                if(detected_objs.size()!=0)
+                    setDistances();
                 ready = true;
             }).addOnFailureListener(e -> {
                 Log.e("FAIL2","2");
