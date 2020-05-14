@@ -63,12 +63,13 @@ public class ObjectDetector implements Scene.OnUpdateListener {
     ObjectDetector(Context appcontext){
         this.appcontext = appcontext;
         arfr = ((ThisApplication) ((AppCompatActivity) appcontext).getApplication()).arFragment;
-        FirebaseVisionObjectDetectorOptions options = new FirebaseVisionObjectDetectorOptions.Builder().setDetectorMode(FirebaseVisionObjectDetectorOptions.STREAM_MODE).enableClassification().build();
+
+        /*FirebaseVisionObjectDetectorOptions options = new FirebaseVisionObjectDetectorOptions.Builder().setDetectorMode(FirebaseVisionObjectDetectorOptions.STREAM_MODE).enableClassification().build();
         FirebaseApp.initializeApp(appcontext);
         objectDetector = FirebaseVision.getInstance().getOnDeviceObjectDetector(options);
         labeler = FirebaseVision.getInstance().getOnDeviceImageLabeler();
         textRecognizer = FirebaseVision.getInstance().getOnDeviceTextRecognizer();
-    }
+*/    }
 
     public void startDetecting(){
         arfr = ((ThisApplication) ((AppCompatActivity) appcontext).getApplication()).arFragment;
@@ -79,7 +80,7 @@ public class ObjectDetector implements Scene.OnUpdateListener {
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    arfr.getArSceneView().getScene().addOnUpdateListener(ObjectDetector.this);
+
                 }
             }).start();
         }

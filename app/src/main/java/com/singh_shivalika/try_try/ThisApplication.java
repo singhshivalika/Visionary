@@ -11,6 +11,14 @@ import com.google.ar.sceneform.ux.ArFragment;
 
 public class ThisApplication extends Application {
 
+    public static class MODE{
+        public static final int NO_OPERATION = 0;
+        public static final int NAVIGATOR = 1;
+        public static final int DETECTOR = 2;
+        public static final int RECOGNIZER = 3;
+        public static final int SOS = 4;
+    }
+
     public ArFragment arFragment;
     private boolean give_Instruction = false;
     public VoiceClass voiceClass;
@@ -19,8 +27,6 @@ public class ThisApplication extends Application {
     public CameraClass cameraClass;
 
     public int mode = 0;
-    //0 navigation
-    //1 object
 
     public void setImageAnalysis(ImageAnalysis imageAnalysis){
         this.imageAnalysis = imageAnalysis;
