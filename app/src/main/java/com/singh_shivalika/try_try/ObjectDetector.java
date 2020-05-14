@@ -103,12 +103,13 @@ public class ObjectDetector implements Scene.OnUpdateListener {
                     text += line.getText();
 
             Log.e("DETECTED_TEXT : ",text);
-            //VoiceClass.speak(text);
-            try {
-                Thread.sleep(text.length() * 100);
-            }catch (Exception e){ Log.e("Exception","Exceptiom"); }
-
-
+            if(text.length()==0);
+            else {
+                VoiceClass.speak(text);
+                try {
+                    Thread.sleep(text.length() * 100);
+                }catch (Exception e){ Log.e("Exception","Exceptiom"); }
+            }
 
             //Object Detector starting...
             objectDetector.processImage(image).addOnSuccessListener(detectedObjects -> {
