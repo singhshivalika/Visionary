@@ -97,7 +97,7 @@ public class ObjectDetector implements Scene.OnUpdateListener {
 
         // Text Recognizer...
         textRecognizer.processImage(image).addOnSuccessListener(firebaseVisionText -> {
-            String text = "Detected text as follows : ";
+            String text = "";
             for(FirebaseVisionText.TextBlock block : firebaseVisionText.getTextBlocks())
                 for (FirebaseVisionText.Line line: block.getLines())
                     text += line.getText();
@@ -105,7 +105,7 @@ public class ObjectDetector implements Scene.OnUpdateListener {
             Log.e("DETECTED_TEXT : ",text);
             if(text.length()==0);
             else {
-                VoiceClass.speak(text);
+                VoiceClass.speak("Detected text :" + text);
                 try {
                     Thread.sleep(text.length() * 100);
                 }catch (Exception e){ Log.e("Exception","Exceptiom"); }
