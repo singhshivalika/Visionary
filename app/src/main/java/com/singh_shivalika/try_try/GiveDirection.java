@@ -20,7 +20,7 @@ import com.google.ar.sceneform.ux.ArFragment;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 
-public class GiveDirection extends AppCompatActivity implements View.OnTouchListener {
+public class GiveDirection extends AppCompatActivity {
 
     ConstraintLayout tap_area;
     TextView box;
@@ -44,7 +44,6 @@ public class GiveDirection extends AppCompatActivity implements View.OnTouchList
         startCustomNav(i.getStringExtra("DATAPOINTS"));
 
         arFragment.getArSceneView().pauseAsync(AsyncTask.THREAD_POOL_EXECUTOR);
-        tap_area.setOnTouchListener(this);
     }
 
     private void startCustomNav(String datapoints) {
@@ -82,26 +81,4 @@ public class GiveDirection extends AppCompatActivity implements View.OnTouchList
             navigator.pause();
     }
 
-    @Override
-    public boolean onTouch(View view, MotionEvent event) {
-        if(event.getAction()==MotionEvent.ACTION_DOWN){
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    runOnUiThread(()->{try { arFragment.getArSceneView().resume(); } catch (CameraNotAvailableException e) { e.printStackTrace(); }});
-                    ((ThisApplication)getApplication()).objectDetector.cont = true;
-                    ((ThisApplication)getApplication()).mode = 1;
-                    ((ThisApplication)getApplication()).objectDetector.startDetecting();
-                }
-            }).start();
-        }
-
-        else if(event.getAction()==MotionEvent.ACTION_UP){
-            ((ThisApplication)getApplication()).objectDetector.arfr.getArSceneView().getScene().removeOnUpdateListener(((ThisApplication)getApplication()).objectDetector);
-            ((ThisApplication)getApplication()).objectDetector.cont = false;
-            ((ThisApplication)getApplication()).mode = 0;
-            arFragment.getArSceneView().pause();
-        }
-        return true;
-    }
 }

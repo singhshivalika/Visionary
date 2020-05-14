@@ -2,6 +2,7 @@ package com.singh_shivalika.try_try;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -22,6 +23,7 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
 
     private SelfLocation selfLocation;
+    ConstraintLayout taparea;
 
     private double currentLat,currentLng;
     public static VoiceClass voiceClass;
@@ -31,6 +33,32 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        taparea = findViewById(R.id.tap_area);
+
+        SwipeListener sl = new SwipeListener(MainActivity.this){
+
+            @Override
+            public void onSwipeRight() {
+                detector();
+            }
+
+            @Override
+            public void onSwipeLeft() {
+
+            }
+
+            @Override
+            public void onSwipeTop() {
+
+            }
+
+            @Override
+            public void onSwipeBottom() {
+
+            }
+        };
+
+        taparea.setOnTouchListener(sl);
         new Thread(()->{ init(); }).start();
     }
 
@@ -181,7 +209,21 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void onObjectDetected(List<String> detectedObjects) {
-
+    private void navigator(){
+        Log.e("SWIPE","NAVIGATE");
     }
+
+    private void detector(){
+        Log.e("SWIPE","DETECTOR");
+    }
+
+    private void recognizer(){
+        Log.e("SWIPE","RECOGNIZER");
+    }
+
+    private void sos(){
+        Log.e("SWIPE","SOS");
+    }
+
+
 }
