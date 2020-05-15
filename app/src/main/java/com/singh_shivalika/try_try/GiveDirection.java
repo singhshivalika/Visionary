@@ -28,7 +28,6 @@ public class GiveDirection extends AppCompatActivity {
     CameraClass cameraClass;
     ArFragment arFragment;
 
-
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
