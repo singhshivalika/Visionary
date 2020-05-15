@@ -57,6 +57,7 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
     private SelfLocation selfLocation;
     ConstraintLayout taparea;
     TextView box;
+    SwipeListener sl;
 
     private double currentLat,currentLng;
     public static VoiceClass voiceClass;
@@ -77,7 +78,7 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
         taparea = findViewById(R.id.tap_area);
         box = findViewById(R.id.box);
 
-        SwipeListener sl = new SwipeListener(MainActivity.this){
+        sl = new SwipeListener(MainActivity.this){
             @Override
             public void onSwipeRight() {
                 detector();
@@ -95,8 +96,17 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
                 navigator();
             }
         };
-        taparea.setOnTouchListener(sl);
 
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                init();
+            }
+        }).start();
+
+    }
+
+    public void init(){
         voiceClass = new VoiceClass(this);
         ((ThisApplication)getApplication()).voiceClass = voiceClass;
 
@@ -113,7 +123,10 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
             currentLng = 77.452757;
             /*currentLat = selfLocation.LATITUDE;
             currentLng = selfLocation.LONGITUDE;*/
+
+            taparea.setOnTouchListener(sl);
         });
+
     }
 
     public void askUser(){
