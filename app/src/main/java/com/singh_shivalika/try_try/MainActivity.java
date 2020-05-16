@@ -53,6 +53,7 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
 
     Navigator navigator;
     ArFragment arFragment;
+    SOS sos;
 
     private SelfLocation selfLocation;
     ConstraintLayout taparea;
@@ -74,6 +75,8 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
         arFragment.getView().setVisibility(View.INVISIBLE);
         ((ThisApplication)getApplication()).arFragment = arFragment;
         arFragment.getArSceneView().pauseAsync(AsyncTask.THREAD_POOL_EXECUTOR);
+
+        sos = new SOS(this);
 
         taparea = findViewById(R.id.tap_area);
         box = findViewById(R.id.box);
@@ -221,7 +224,6 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
             c =  (HttpURLConnection) url.openConnection();
             c.setRequestMethod("GET");
             c.setConnectTimeout(3000);
-            //e
 
             c.setDoOutput(true);
             c.setDoInput(true);
@@ -261,22 +263,29 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
     private void navigator(){
         ((ThisApplication)getApplication()).mode=ThisApplication.MODE.NAVIGATOR;
         arFragment.getArSceneView().pauseAsync(AsyncTask.THREAD_POOL_EXECUTOR);
+        arFragment.getArSceneView().getScene().removeOnUpdateListener(MainActivity.this);
         if(navigator==null)
             MainActivity.this.askUser();
     }
 
     //SwipeRight
     private void detector(){
+        if(((ThisApplication)getApplication()).mode == ThisApplication.MODE.DETECTOR)return;
+        if(((ThisApplication)getApplication()).mode == ThisApplication.MODE.RECOGNIZER){
+            ((ThisApplication)getApplication()).mode = ThisApplication.MODE.DETECTOR;
+            return;
+        }
         ((ThisApplication)getApplication()).mode=ThisApplication.MODE.DETECTOR;
+
         new Thread(new Runnable() {
             @Override
             public void run() {
                 runOnUiThread(()->{
                             try {
                                 arFragment.getArSceneView().resume();
+                                arFragment.getArSceneView().getScene().addOnUpdateListener(MainActivity.this);
                             } catch (CameraNotAvailableException e) { e.printStackTrace(); }
                 });
-                arFragment.getArSceneView().getScene().addOnUpdateListener(MainActivity.this);
             }
         }).start();
 
@@ -284,8 +293,24 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
 
     //SwipeLeft
     private void recognizer(){
+        if(((ThisApplication)getApplication()).mode == ThisApplication.MODE.RECOGNIZER)return;
+        if(((ThisApplication)getApplication()).mode == ThisApplication.MODE.DETECTOR){
+            ((ThisApplication)getApplication()).mode = ThisApplication.MODE.RECOGNIZER;
+            return;
+        }
         ((ThisApplication)getApplication()).mode=ThisApplication.MODE.RECOGNIZER;
 
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                runOnUiThread(()->{
+                    try {
+                        arFragment.getArSceneView().resume();
+                        arFragment.getArSceneView().getScene().addOnUpdateListener(MainActivity.this);
+                    } catch (CameraNotAvailableException e) { e.printStackTrace(); }
+                });
+            }
+        }).start();
     }
 
     //SwipeUp
@@ -339,7 +364,10 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
 
         try {
             Log.e("DETECT M","d");
-            detect(f.acquireCameraImage());
+            if(((ThisApplication)getApplication()).mode == ThisApplication.MODE.DETECTOR)
+                objdetect(f.acquireCameraImage());
+            else if(((ThisApplication)getApplication()).mode == ThisApplication.MODE.RECOGNIZER)
+                textdetect(f.acquireCameraImage());
         }catch (Exception e){
         }
     }
@@ -348,7 +376,7 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
     FirebaseVisionImage image = null;
     private static final int MARGIN = 10;
 
-    public void detect(Image img){
+    public void objdetect(Image img){
         ready = false;
         FirebaseVisionImage image = FirebaseVisionImage.fromMediaImage(img, 0);
         this.image = image;
@@ -388,13 +416,38 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
         });
     }
 
+    public void textdetect(Image img){
+        ready = false;
+        FirebaseVisionImage image = FirebaseVisionImage.fromMediaImage(img, 1);
+        this.image = image;
+        img.close();
+
+        textRecognizer.processImage(image).addOnSuccessListener(firebaseVisionText -> {
+            String text = "";
+            for (FirebaseVisionText.TextBlock block : firebaseVisionText.getTextBlocks())
+                for (FirebaseVisionText.Line line : block.getLines())
+                    text += line.getText();
+
+            Log.e("DETECTED_TEXT : ", text);
+            if (text.length() == 0) ;
+            else {
+                VoiceClass.speak("Detected text :" + text);
+                try {
+                    Thread.sleep(text.length() * 100);
+                } catch (Exception e) {
+                    Log.e("Exception", "Exception");
+                }
+            }
+            ready = true;
+        });
+    }
 
     private void setDistances() {
         MotionEvent motionEvent = null;
         Log.e("SETD",String.valueOf(detected_objs.size()));
 
         for(DetectedObject o : detected_objs.values()){
-            motionEvent = MotionEvent.obtain(SystemClock.uptimeMillis(), SystemClock.uptimeMillis()+100, MotionEvent.ACTION_UP,(float) o.getX(),(float)o.getY(),2);
+            motionEvent = MotionEvent.obtain(SystemClock.uptimeMillis(), SystemClock.uptimeMillis()+10, MotionEvent.ACTION_UP,(float) o.getX(),(float)o.getY(),2);
             Collection<HitResult> results =  f.hitTest(motionEvent);
             Log.e("Distance",String.valueOf(results.size()));
             if(results.size()==0)continue;
