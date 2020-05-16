@@ -6,6 +6,7 @@
     android:layout_height="match_parent"
     xmlns:mapbox="http://schemas.android.com/apk/res-auto"
     android:id="@+id/tap_area"
+    android:background="#ffffff"
     tools:context=".MainActivity">
 
     <fragment
@@ -26,13 +27,121 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
-        android:layout_margin="20dp"
+        android:layout_margin="70dp"
         android:background="#ffffff"
         android:padding="10dp"
-        android:textStyle="bold"
         android:textColor="#000000"
         android:text="Welcome\n User"
         android:gravity="center_vertical|center_horizontal"
-        android:textSize="50dp" />
+        android:textSize="40dp" />
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:text="SOS"
+        android:textAlignment="center"
+        android:textAllCaps="true"
+        android:textColor="#0185C3"
+        android:textSize="30sp"
+        android:textStyle="italic"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="NAVIGATOR"
+        android:textAllCaps="true"
+        android:textColor="#0185C3"
+        android:textSize="30sp"
+        android:textStyle="italic"
+        android:textAlignment="center"
+        android:layout_margin="10dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/textView3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:lineSpacingExtra="-8sp"
+        android:text="T\nE\nX\nT\n \nR\nE\nA\nD\nE\nR"
+        android:textAlignment="center"
+        android:textAllCaps="true"
+        android:textColor="#0185C3"
+        android:textSize="30sp"
+        android:textStyle="italic"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/textView4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:lineSpacingExtra="-8sp"
+        android:text="O\nB\nJ\nE\nC\nT\n \nR\nE\nC\nO\nG\nN\nI\nT\nI\n\O\nN"
+        android:textAllCaps="true"
+        android:textAlignment="center"
+        android:textColor="#0185C3"
+        android:textSize="30sp"
+        android:textStyle="italic"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="@id/textView"
+        app:layout_constraintStart_toStartOf="@id/textView"
+        app:layout_constraintTop_toBottomOf="@id/textView"
+        android:layout_margin="5dp"
+        android:scaleX="2"
+        android:scaleY="2"
+        android:src="@drawable/arrow" />
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="@id/textView2"
+        app:layout_constraintStart_toStartOf="@id/textView2"
+        app:layout_constraintBottom_toTopOf="@id/textView2"
+        android:rotation="180"
+        android:layout_margin="5dp"
+        android:scaleX="2"
+        android:scaleY="2"
+        android:src="@drawable/arrow" />
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="@id/textView3"
+        app:layout_constraintStart_toEndOf="@id/textView3"
+        app:layout_constraintBottom_toBottomOf="@id/textView3"
+        android:rotation="270"
+        android:layout_margin="15dp"
+        android:scaleX="2"
+        android:scaleY="2"
+        android:src="@drawable/arrow" />
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="@id/textView4"
+        app:layout_constraintEnd_toStartOf="@id/textView4"
+        app:layout_constraintBottom_toBottomOf="@id/textView4"
+        android:rotation="90"
+        android:layout_margin="15dp"
+        android:scaleX="2"
+        android:scaleY="2"
+        android:src="@drawable/arrow" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

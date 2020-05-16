@@ -109,7 +109,7 @@ public class ObjectDetector implements Scene.OnUpdateListener {
                 VoiceClass.speak("Detected text :" + text);
                 try {
                     Thread.sleep(text.length() * 100);
-                }catch (Exception e){ Log.e("Exception","Exceptiom"); }
+                }catch (Exception e){ Log.e("Exception","Exception"); }
             }
 
             //Object Detector starting...

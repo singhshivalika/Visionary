@@ -260,7 +260,9 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
     //SwipeDown
     private void navigator(){
         ((ThisApplication)getApplication()).mode=ThisApplication.MODE.NAVIGATOR;
-        MainActivity.this.askUser();
+        arFragment.getArSceneView().pauseAsync(AsyncTask.THREAD_POOL_EXECUTOR);
+        if(navigator==null)
+            MainActivity.this.askUser();
     }
 
     //SwipeRight
@@ -269,10 +271,14 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
         new Thread(new Runnable() {
             @Override
             public void run() {
+                runOnUiThread(()->{
+                            try {
+                                arFragment.getArSceneView().resume();
+                            } catch (CameraNotAvailableException e) { e.printStackTrace(); }
+                });
                 arFragment.getArSceneView().getScene().addOnUpdateListener(MainActivity.this);
             }
         }).start();
-
 
     }
 
@@ -282,15 +288,11 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
 
     }
 
-
     //SwipeUp
     private void sos(){
         ((ThisApplication)getApplication()).mode=ThisApplication.MODE.SOS;
 
     }
-
-
-
 
 
     private void startCustomNav(String datapoints) {
@@ -301,7 +303,7 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
             public void run() {
                 while(true){
                     if(!((ThisApplication)getApplication()).isGive_Instruction())break;
-                    if(((ThisApplication)getApplication()).mode != 0)continue;
+                    if(((ThisApplication)getApplication()).mode != ThisApplication.MODE.NAVIGATOR)continue;
                     String t=  navigator.getUpdate(28.663067,77.452757);
                     Log.e("RESPONSE",t);
                     runOnUiThread(()-> { box.setText(t); });
@@ -319,14 +321,13 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
 
     @Override
     public void onUpdate(FrameTime frameTime) {
+        if(!ready){ return; }
+
         if( ((ThisApplication)getApplication()).mode == ThisApplication.MODE.RECOGNIZER || ((ThisApplication)getApplication()).mode == ThisApplication.MODE.DETECTOR);
         else {
             arFragment.getArSceneView().getScene().removeOnUpdateListener(this);
             return;
         }
-
-        Log.e("UPDATE","AR_UPDT");
-        if(!ready){Log.e("LOL","NOT READY"); return;}
 
         Session arSession = arFragment.getArSceneView().getSession();
         if(arSession==null)return;
@@ -341,10 +342,7 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
             detect(f.acquireCameraImage());
         }catch (Exception e){
         }
-
     }
-
-
 
     Map<String,DetectedObject> detected_objs = new HashMap<>();
     FirebaseVisionImage image = null;
@@ -366,23 +364,25 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
                 //Labeler starting...
                 labeler.processImage(FirebaseVisionImage.fromBitmap(Bitmap.createBitmap(image.getBitmap(), extraRect.left, extraRect.top, extraRect.width(), extraRect.height()))).addOnSuccessListener(firebaseVisionImageLabels -> {
 
-                    String product = "";
                     for (FirebaseVisionImageLabel l : firebaseVisionImageLabels) {
                         Log.e("LOL", l.getText() + " " + l.getConfidence());
                         if (l.getConfidence() >= 0.7) {
                             DetectedObject object = new DetectedObject(l.getText(), l.getConfidence());
                             object.setX_Y((double) (o.getBoundingBox().left + o.getBoundingBox().right) / 2, (double) (o.getBoundingBox().top + o.getBoundingBox().bottom) / 2);
-                            detected_objs.put(product, object);
+                            detected_objs.put(l.getText() , object);
                         }
                     }
                 }).addOnFailureListener(e -> {
                     Log.e("FAIL1","1");
                 });
             }
-            Log.e("DIVIDE","CONQUER");
+
+            say();
+
             if(detected_objs.size()!=0)
                 setDistances();
-            ready = true;
+            else
+                ready = true;
         }).addOnFailureListener(e -> {
             Log.e("FAIL2","2");
         });
@@ -394,23 +394,22 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
         Log.e("SETD",String.valueOf(detected_objs.size()));
 
         for(DetectedObject o : detected_objs.values()){
-            motionEvent = MotionEvent.obtain(SystemClock.uptimeMillis(), SystemClock.uptimeMillis()+10, MotionEvent.ACTION_UP,(float) o.getX(),(float)o.getY(),2);
+            motionEvent = MotionEvent.obtain(SystemClock.uptimeMillis(), SystemClock.uptimeMillis()+100, MotionEvent.ACTION_UP,(float) o.getX(),(float)o.getY(),2);
             Collection<HitResult> results =  f.hitTest(motionEvent);
+            Log.e("Distance",String.valueOf(results.size()));
             if(results.size()==0)continue;
             HitResult currentHit = (HitResult) results.toArray()[0];
             o.setDistance(currentHit.getDistance());
             Log.e("SET",String.valueOf(currentHit.getDistance()));
         }
-
         say();
-
     }
 
     private void say() {
         StringBuilder sb = new StringBuilder();
         for(String str: detected_objs.keySet()) {
             sb.append(detected_objs.get(str).getProduct() + " ");
-            if(detected_objs.get(str).getDistance()!=0)sb.append(" at "+String.format("%.1f",detected_objs.get(str).getDistance()) +" meters");
+            if(detected_objs.get(str).getDistance()!=0)sb.append(" at "+String.format("%.1f",detected_objs.get(str).getDistance()) +" meters ");
         }
         Log.e("OUTCOME",sb.toString());
         voiceClass.speak(sb.toString());
@@ -419,6 +418,7 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
         }catch (Exception e){ }
 
         detected_objs.clear();
+        ready = true;
     }
 
 }
