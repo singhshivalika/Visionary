@@ -8,6 +8,7 @@ import android.net.Uri;
 import android.provider.ContactsContract;
 import android.telephony.PhoneNumberUtils;
 import android.telephony.TelephonyManager;
+import android.text.TextUtils;
 import android.util.Log;
 
 import java.util.ArrayList;
@@ -23,6 +24,8 @@ public class SOS {
     SOS(Context context){
         this.context = context;
 
+        TelephonyManager mngr = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+
         ContentResolver cr = context.getContentResolver();
         String[] proj = new String[]{ ContactsContract.Contacts.DISPLAY_NAME, ContactsContract.CommonDataKinds.Phone.NUMBER};
         Cursor cursor = cr.query(ContactsContract.Data.CONTENT_URI, proj, null, null, null);
@@ -30,12 +33,19 @@ public class SOS {
         while(cursor.moveToNext()){
             try {
                 String s = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
-                if(PhoneNumberUtils.isEmergencyNumber(s))
-                    Log.e("EMERGENCY",s);
+                if(s==null)continue;
 
-            }catch (Exception e){}
+                if(isValidPhone(s))
+                    Log.e("NUMBER",s);
+
+
+            }catch (Exception e){ Log.e("EXCEPT",e.toString()); }
 
         }
+
+        if(PhoneNumberUtils.isLocalEmergencyNumber(context,"989-128-1703"))
+            Log.e("EMERGENCY","LOL");
+
 
 
 
@@ -52,5 +62,14 @@ public class SOS {
 
 
         cursor.close();
+    }
+
+    private boolean isValidPhone(String str){
+        for(char s : str.toCharArray()){
+            if((s>='0' && s<='9') || s == '-' || s=='+' || s==' ');
+            else
+                return false;
+        }
+        return true;
     }
 }
