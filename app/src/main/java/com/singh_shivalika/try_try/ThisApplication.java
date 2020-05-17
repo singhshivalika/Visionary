@@ -26,7 +26,11 @@ public class ThisApplication extends Application {
 
     public void shareLocation() {
         TelephonyManager mngr = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-        @SuppressLint("MissingPermission") LocationUpdate update = new LocationUpdate(new Point(selfLocation.LATITUDE,selfLocation.LONGITUDE),mngr.getLine1Number(),SOS.starredContacts);
+
+        @SuppressLint("MissingPermission")
+        String num = mngr.getLine1Number();
+
+        LocationUpdate update = new LocationUpdate(new Point(selfLocation.LATITUDE,selfLocation.LONGITUDE),num.substring(num.length()-10),SOS.starredContacts);
         try {
             writer.reset();
             writer.writeUnshared(update);

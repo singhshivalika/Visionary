@@ -19,5 +19,13 @@ public class LocationResponse implements Serializable {
     public void setPoint(Point point) {
         this.point = point;
     }
+
+    public String getTarget() {
+        return target;
+    }
+
+    public Point getPoint() {
+        return point;
+    }
 }
 
