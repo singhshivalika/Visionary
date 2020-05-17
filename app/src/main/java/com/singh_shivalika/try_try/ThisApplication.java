@@ -1,11 +1,9 @@
 package com.singh_shivalika.try_try;
 
 import android.app.Application;
-import android.view.TextureView;
 
 import androidx.camera.core.ImageAnalysis;
-import androidx.camera.core.impl.ImageAnalysisConfig;
-import androidx.camera.view.PreviewView;
+
 
 import com.google.ar.sceneform.ux.ArFragment;
 

@@ -102,13 +102,11 @@ public class SOS {
         ((ThisApplication)((MainActivity) context).getApplication()).voiceClass.speak("SOS cancelled.");
     }
 
-
     private void cry_for_help() {
         AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
         audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, 100, 0);
 
         MediaPlayer player = MediaPlayer.create(context, R.raw.alarm);
-        player.setLooping(true);
         player.start();
         player.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
@@ -119,8 +117,7 @@ public class SOS {
     }
 }
 
-//Message bhi jayega... so be careful....
-//result ???
+
 class ClearSOS extends TimerTask{
     SOS sos;
     ClearSOS(SOS sos){
