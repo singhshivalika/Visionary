@@ -76,8 +76,6 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
         ((ThisApplication)getApplication()).arFragment = arFragment;
         arFragment.getArSceneView().pauseAsync(AsyncTask.THREAD_POOL_EXECUTOR);
 
-        sos = new SOS(this);
-
         taparea = findViewById(R.id.tap_area);
         box = findViewById(R.id.box);
 
@@ -128,6 +126,7 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
             currentLng = selfLocation.LONGITUDE;*/
 
             taparea.setOnTouchListener(sl);
+            sos = new SOS(MainActivity.this);
         });
 
     }
@@ -190,13 +189,7 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
                         obj = new JSONObject(arr.get(0).toString());
 
                     String dp = (new JSONObject(obj.getString("geometry"))).getString("coordinates");
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            startCustomNav(dp.substring(1,dp.length()-1));
-                        }
-                    });
-
+                    runOnUiThread(() -> startCustomNav(dp.substring(1,dp.length()-1)));
                 }
                 catch(Exception e) {
                     Log.e("ERROR", String.valueOf(e.toString()) );
@@ -316,7 +309,7 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
     //SwipeUp
     private void sos(){
         ((ThisApplication)getApplication()).mode=ThisApplication.MODE.SOS;
-
+        sos.activateSOS();
     }
 
 
@@ -473,5 +466,4 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
         detected_objs.clear();
         ready = true;
     }
-
 }
