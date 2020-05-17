@@ -4,13 +4,13 @@ import android.annotation.SuppressLint;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.SystemClock;
 import android.provider.ContactsContract;
 import android.telephony.PhoneNumberUtils;
 import android.telephony.SmsManager;
-import android.telephony.TelephonyManager;
-import android.telephony.emergency.EmergencyNumber;
 import android.util.ArraySet;
 import android.util.Log;
 
@@ -53,9 +53,9 @@ public class SOS {
     private void addToStarred(String number){
         String temp = "";
         for(char c : number.toCharArray()){
-            if((c>='0' && c<='9') || c=='+' || c=='-')
+            if((c>='0' && c<='9') || c=='+')
                 temp+=String.valueOf(c);
-            else if(c==' ')
+            else if(c==' '||c=='-')
                 continue;
             else return;
         }
@@ -82,26 +82,45 @@ public class SOS {
 
         if(SOS_count==THRESHOLD) {
             tt.cancel();
+            SOS_count = 0;
             startSOS();
-            resetSOSCounter();
         }
     }
 
     private void startSOS(){
-        ((ThisApplication)((MainActivity) context).getApplication()).voiceClass.speak(String.valueOf("SOS activated."));
-
+        ((ThisApplication)((MainActivity) context).getApplication()).voiceClass.speak("SOS activated.");
+        cry_for_help();
         SmsManager smsManager = SmsManager.getDefault();
         for(String i : starredContacts) {
             smsManager.sendTextMessage(i, null, "I am in distress right now. Need help !!!", null, null);
         }
     }
 
+
     public void resetSOSCounter(){
         this.SOS_count = 0;
-        ((ThisApplication)((MainActivity) context).getApplication()).voiceClass.speak(String.valueOf("SOS cancelled."));
+        ((ThisApplication)((MainActivity) context).getApplication()).voiceClass.speak("SOS cancelled.");
+    }
+
+
+    private void cry_for_help() {
+        AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+        audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, 100, 0);
+
+        MediaPlayer player = MediaPlayer.create(context, R.raw.alarm);
+        player.setLooping(true);
+        player.start();
+        player.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mediaPlayer) {
+                Log.e("COMPLETED","LOL");
+            }
+        });
     }
 }
 
+//Message bhi jayega... so be careful....
+//result ???
 class ClearSOS extends TimerTask{
     SOS sos;
     ClearSOS(SOS sos){
