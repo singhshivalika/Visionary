@@ -2,14 +2,15 @@ package com.visionary.communication;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Set;
 
 public class LocationUpdate implements Serializable {
 
     Point locaton;
     String ownPhoneNo;
-    ArrayList<String> starred;
+    Set<String> starred;
 
-    public LocationUpdate(Point locaton, String ownPhoneNo, ArrayList<String> starred) {
+    public LocationUpdate(Point locaton, String ownPhoneNo, Set<String> starred) {
         this.locaton = locaton;
         this.ownPhoneNo = ownPhoneNo;
         this.starred = starred;
@@ -31,11 +32,11 @@ public class LocationUpdate implements Serializable {
         this.ownPhoneNo = ownPhoneNo;
     }
 
-    public ArrayList<String> getStarred() {
+    public Set<String> getStarred() {
         return starred;
     }
 
-    public void setStarred(ArrayList<String> starred) {
+    public void setStarred(Set<String> starred) {
         this.starred = starred;
     }
 }

@@ -31,7 +31,7 @@ public class SOS {
     private static final int TIMEOUT = 2000;
 
     private Context context;
-    private Set<String> starredContacts = new TreeSet<String>();
+    public static Set<String> starredContacts = new TreeSet<String>();
 
     @SuppressLint("NewApi")
     SOS(Context context){

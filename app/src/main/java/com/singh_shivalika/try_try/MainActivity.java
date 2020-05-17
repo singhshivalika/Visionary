@@ -119,6 +119,7 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
 
         runOnUiThread(() -> {
             selfLocation = new SelfLocation(MainActivity.this);
+            ((ThisApplication)getApplication()).selfLocation = selfLocation;
             Log.e("Current Location", "" + selfLocation.LATITUDE + " " + selfLocation.LONGITUDE);
             currentLat = 28.663067;
             currentLng = 77.452757;
@@ -127,8 +128,21 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
 
             taparea.setOnTouchListener(sl);
             sos = new SOS(MainActivity.this);
+
+            startLocationSharing();
         });
 
+    }
+
+    private void startLocationSharing() {
+        new Thread(() -> {
+            while(true) {
+                ((ThisApplication) getApplication()).shareLocation();
+                try {
+                    Thread.sleep(5000);
+                }catch (Exception e){}
+            }
+        }).start();
     }
 
     public void askUser(){
