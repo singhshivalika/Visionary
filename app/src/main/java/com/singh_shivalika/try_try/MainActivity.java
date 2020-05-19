@@ -7,9 +7,11 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
+import android.graphics.Typeface;
 import android.media.Image;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.SystemClock;
 import android.speech.RecognizerIntent;
 import android.util.Log;
@@ -51,6 +53,8 @@ import java.util.Map;
 
 public class MainActivity extends AppCompatActivity implements Scene.OnUpdateListener {
 
+    TextView obj_recog,text_reader,navigate,sos_t;
+
     Navigator navigator;
     ArFragment arFragment;
     SOS sos;
@@ -70,6 +74,11 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        text_reader = findViewById(R.id.text_reader);
+        navigate = findViewById(R.id.navigate);
+        sos_t = findViewById(R.id.sos);
+        obj_recog = findViewById(R.id.obj_recog);
 
         arFragment = (ArFragment) getSupportFragmentManager().findFragmentById(R.id.arfragment);
         arFragment.getView().setVisibility(View.INVISIBLE);
@@ -98,12 +107,7 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
             }
         };
 
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                init();
-            }
-        }).start();
+        new Thread(() -> init()).start();
 
     }
 
@@ -268,15 +272,31 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
 
     //SwipeDown
     private void navigator(){
+        voiceClass.speak("Navigator activated");
+        unBold();
+        navigate.setTypeface(null,Typeface.BOLD);
+        box.setText("Navigator activated");
+
         ((ThisApplication)getApplication()).mode=ThisApplication.MODE.NAVIGATOR;
         arFragment.getArSceneView().pauseAsync(AsyncTask.THREAD_POOL_EXECUTOR);
         arFragment.getArSceneView().getScene().removeOnUpdateListener(MainActivity.this);
-        if(navigator==null)
-            MainActivity.this.askUser();
+
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if(navigator==null)
+                    MainActivity.this.askUser();
+            }
+        },1500);
     }
 
     //SwipeRight
     private void detector(){
+        voiceClass.speak("Object recognizer activated");
+        unBold();
+        obj_recog.setTypeface(null,Typeface.BOLD);
+        box.setText("Object Detector activated");
+
         if(((ThisApplication)getApplication()).mode == ThisApplication.MODE.DETECTOR)return;
         if(((ThisApplication)getApplication()).mode == ThisApplication.MODE.RECOGNIZER){
             ((ThisApplication)getApplication()).mode = ThisApplication.MODE.DETECTOR;
@@ -287,6 +307,9 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
         new Thread(new Runnable() {
             @Override
             public void run() {
+                try {
+                    Thread.sleep(2000);
+                }catch (Exception e){}
                 runOnUiThread(()->{
                             try {
                                 arFragment.getArSceneView().resume();
@@ -300,6 +323,11 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
 
     //SwipeLeft
     private void recognizer(){
+        voiceClass.speak("Text Reader activated");
+        unBold();
+        text_reader.setTypeface(null,Typeface.BOLD);
+        box.setText("Text Recognizer activated");
+
         if(((ThisApplication)getApplication()).mode == ThisApplication.MODE.RECOGNIZER)return;
         if(((ThisApplication)getApplication()).mode == ThisApplication.MODE.DETECTOR){
             ((ThisApplication)getApplication()).mode = ThisApplication.MODE.RECOGNIZER;
@@ -310,6 +338,9 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
         new Thread(new Runnable() {
             @Override
             public void run() {
+                try {
+                    Thread.sleep(1000);
+                }catch (Exception e){}
                 runOnUiThread(()->{
                     try {
                         arFragment.getArSceneView().resume();
@@ -322,8 +353,17 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
 
     //SwipeUp
     private void sos(){
+        voiceClass.speak("SOS activated");
         ((ThisApplication)getApplication()).mode=ThisApplication.MODE.SOS;
         sos.activateSOS();
+    }
+
+
+    private void unBold(){
+        text_reader.setTypeface(null, Typeface.NORMAL);
+        obj_recog.setTypeface(null, Typeface.NORMAL);
+        sos_t.setTypeface(null, Typeface.NORMAL);
+        navigate.setTypeface(null, Typeface.NORMAL);
     }
 
 
@@ -439,6 +479,7 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
             if (text.length() == 0) ;
             else {
                 VoiceClass.speak("Detected text :" + text);
+                box.setText(text);
                 try {
                     Thread.sleep(text.length() * 100);
                 } catch (Exception e) {
@@ -472,6 +513,7 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
             if(detected_objs.get(str).getDistance()!=0)sb.append(" at "+String.format("%.1f",detected_objs.get(str).getDistance()) +" meters ");
         }
         Log.e("OUTCOME",sb.toString());
+        box.setText(sb.toString());
         voiceClass.speak(sb.toString());
         try {
             Thread.sleep(100 * sb.toString().length());

@@ -37,7 +37,7 @@
         android:textSize="40dp" />
 
     <TextView
-        android:id="@+id/textView"
+        android:id="@+id/sos"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="10dp"
@@ -52,7 +52,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/textView2"
+        android:id="@+id/navigate"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="NAVIGATOR"
@@ -67,7 +67,7 @@
         app:layout_constraintStart_toStartOf="parent" />
 
     <TextView
-        android:id="@+id/textView3"
+        android:id="@+id/text_reader"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="10dp"
@@ -83,7 +83,7 @@
         app:layout_constraintStart_toStartOf="parent" />
 
     <TextView
-        android:id="@+id/textView4"
+        android:id="@+id/obj_recog"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="10dp"
@@ -101,9 +101,9 @@
     <ImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintEnd_toEndOf="@id/textView"
-        app:layout_constraintStart_toStartOf="@id/textView"
-        app:layout_constraintTop_toBottomOf="@id/textView"
+        app:layout_constraintEnd_toEndOf="@id/sos"
+        app:layout_constraintStart_toStartOf="@id/sos"
+        app:layout_constraintTop_toBottomOf="@id/sos"
         android:layout_margin="5dp"
         android:scaleX="2"
         android:scaleY="2"
@@ -112,9 +112,9 @@
     <ImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintEnd_toEndOf="@id/textView2"
-        app:layout_constraintStart_toStartOf="@id/textView2"
-        app:layout_constraintBottom_toTopOf="@id/textView2"
+        app:layout_constraintEnd_toEndOf="@id/navigate"
+        app:layout_constraintStart_toStartOf="@id/navigate"
+        app:layout_constraintBottom_toTopOf="@id/navigate"
         android:rotation="180"
         android:layout_margin="5dp"
         android:scaleX="2"
@@ -124,9 +124,9 @@
     <ImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toTopOf="@id/textView3"
-        app:layout_constraintStart_toEndOf="@id/textView3"
-        app:layout_constraintBottom_toBottomOf="@id/textView3"
+        app:layout_constraintTop_toTopOf="@id/text_reader"
+        app:layout_constraintStart_toEndOf="@id/text_reader"
+        app:layout_constraintBottom_toBottomOf="@id/text_reader"
         android:rotation="270"
         android:layout_margin="15dp"
         android:scaleX="2"
@@ -136,9 +136,9 @@
     <ImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toTopOf="@id/textView4"
-        app:layout_constraintEnd_toStartOf="@id/textView4"
-        app:layout_constraintBottom_toBottomOf="@id/textView4"
+        app:layout_constraintTop_toTopOf="@id/obj_recog"
+        app:layout_constraintEnd_toStartOf="@id/obj_recog"
+        app:layout_constraintBottom_toBottomOf="@id/obj_recog"
         android:rotation="90"
         android:layout_margin="15dp"
         android:scaleX="2"
