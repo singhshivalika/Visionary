@@ -3,4 +3,29 @@
     <string name="access_token">pk.eyJ1Ijoic2luZ2hzaGl2YWxpa2EiLCJhIjoiY2s4M3p4Ynh4MG1maTNtcWs1aDBra3ByeCJ9.V7og1yFXQEiibTgPrrWvqA</string>
     <string name="start_navigating">Start Navigating</string>
     <string name="geocode_api">19fb149fd52ea6</string>
+    <string name="tutorialQ">
+        Welcome to Visionary,
+        Are you interested in taking a tour of this app?</string>
+
+    <string name="tutorial">This app has been designed to assist you.
+It consists of the 4 features:
+1. Navigation System, device vibrates until you get back to the correct path, and notifies to proceed in which direction, and by what angle.
+2. Object Detection, detects nearby objects and names them.
+3. SOS, it sends SMS to your favourite contacts and plays alarm.
+4. Text Recognition, it recognizes text and reads it out.
+
+Now that you\'ve understood what it does.
+Let me quickly walk you through how to activate these features:
+
+1. Swipe down to activate Navigation System.
+2. Swipe right to detect Objects.
+3. Swipe up 8 times in a row to activate SOS.
+4. Swipe left to recognize Text.
+
+Also, you can ask your family members to keep a track on you via using another app, Tracker.
+
+Seems pretty easy right. Let\'s dive in.</string>
+
+    <string name="sosMessage">I am in an emergency. Please help me! Track my location.</string>
+
 </resources>

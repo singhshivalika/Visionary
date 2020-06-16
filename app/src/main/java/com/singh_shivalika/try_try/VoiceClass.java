@@ -19,6 +19,12 @@ public class VoiceClass {
     static TextToSpeech tts;
     boolean initialized = false;
 
+    final public static class MODE{
+        public static final int ASK_NAVIGATOR=1;
+        public static final int ASK_TUTORIAL=2;
+
+    }
+
     VoiceClass(Context context){
         this.current_context = context;
 
@@ -43,13 +49,14 @@ public class VoiceClass {
         while(!initialized);
     }
 
-    public static void promptSpeechInput() {
+    public static void promptSpeechInput(int MODE) {
         Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.US);
 
+        int requestCode = (MODE == VoiceClass.MODE.ASK_NAVIGATOR)?101:102;
         try {
-            ((MainActivity)current_context).startActivityForResult(intent, 101);
+            ((MainActivity)current_context).startActivityForResult(intent, requestCode);
         } catch (ActivityNotFoundException a) {
             Toast.makeText(((MainActivity)current_context).getApplicationContext(), "Speech Recognition not working", Toast.LENGTH_SHORT).show();
         }

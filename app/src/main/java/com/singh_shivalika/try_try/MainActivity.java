@@ -136,6 +136,12 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
             startLocationSharing();
         });
 
+        voiceClass.speak(getString(R.string.tutorialQ));
+        try {
+            Thread.sleep(4000);
+        }catch (Exception e){ }
+        voiceClass.promptSpeechInput(VoiceClass.MODE.ASK_TUTORIAL);;
+
     }
 
     private void startLocationSharing() {
@@ -157,7 +163,7 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
                 try {
                     Thread.sleep(2000);
                 }catch (InterruptedException e){ Log.e("ERROR","ERROR");}
-                voiceClass.promptSpeechInput();
+                voiceClass.promptSpeechInput(VoiceClass.MODE.ASK_NAVIGATOR);
             }
         }).start();
     }
@@ -179,6 +185,12 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
                     manualNavigation(latLng);
                 }).start();
             }
+        }
+        else if(requestCode==102){
+            if(data==null)return;
+            final String answer = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS).get(0);
+            if(answer.toLowerCase().equals("yes"))
+                voiceClass.speak(getString(R.string.tutorial));
         }
     }
 

@@ -92,7 +92,7 @@ public class SOS {
         cry_for_help();
         SmsManager smsManager = SmsManager.getDefault();
         for(String i : starredContacts) {
-            smsManager.sendTextMessage(i, null, "I am in distress right now. Need help !!!", null, null);
+            smsManager.sendTextMessage(i, null, context.getString(R.string.sosMessage), null, null);
         }
     }
 
